@@ -18,8 +18,7 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    # เช็คว่ามี Secret ครบไหมก่อนรัน จะได้ไม่ Error กลางทาง
-    if: ${{ secrets.SSH_HOST != '' && secrets.SSH_USER != '' && secrets.APP_DIR != '' && secrets.SSH_KEY != '' }}
+    # ลบบรรทัด if ทิ้งไปแล้ว เพื่อแก้ปัญหา Error
 
     steps:
       - name: Checkout code
@@ -40,7 +39,7 @@ jobs:
           # สร้างโฟลเดอร์ปลายทาง
           ssh -p "${SSH_PORT:-22}" "$SSH_USER@$SSH_HOST" "mkdir -p '$APP_DIR'"
 
-          # บีบอัดไฟล์และส่งข้ามไป (ยกเว้นไฟล์ที่ไม่จำเป็น)
+          # บีบอัดไฟล์และส่งข้ามไป
           tar -czf - \
             --exclude='.git' \
             --exclude='node_modules' \
@@ -55,13 +54,13 @@ jobs:
             set -e
             cd "$APP_DIR"
             
-            # 1. สร้างไฟล์ .env บน Server (เพื่อให้ Docker อ่านค่า PORT ได้)
+            # 1. สร้างไฟล์ .env บน Server
             echo "BASE_URL=${BASE_URL}" > .env
             echo "PORT=${PORT}" >> .env
             
-            # 2. สั่ง Build และ Run (ใช้ up --build แทน down เพื่อลด downtime)
+            # 2. สั่ง Build และ Run
             docker compose up -d --build --remove-orphans
             
-            # 3. ลบ Image ขยะที่ไม่ได้ใช้
+            # 3. ลบ Image ขยะ
             docker image prune -f
           EOF
