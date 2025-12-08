@@ -14,22 +14,26 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
       :root {
-        color-scheme: light;
+        color-scheme: dark;
       }
       body {
         font-family: "Space Grotesk", "SF Pro Display", "Soehne", system-ui,
           -apple-system, sans-serif;
-        background: radial-gradient(circle at 20% 20%, #fdfdfd, #f7f7f5 45%),
-          radial-gradient(circle at 80% 0%, #f3f3f3, transparent 40%),
-          #f8f8f6;
+        background: radial-gradient(circle at 18% 20%, #0f0f0f, #060606 48%),
+          radial-gradient(circle at 85% 0%, #111111, transparent 40%),
+          #050505;
       }
       .grid-lines {
         background-image: linear-gradient(
             to right,
-            rgba(0, 0, 0, 0.035) 1px,
+            rgba(255, 255, 255, 0.055) 1px,
             transparent 1px
           ),
-          linear-gradient(to bottom, rgba(0, 0, 0, 0.035) 1px, transparent 1px);
+          linear-gradient(
+            to bottom,
+            rgba(255, 255, 255, 0.055) 1px,
+            transparent 1px
+          );
         background-size: 38px 38px;
         mask-image: radial-gradient(
           circle at center,
@@ -41,7 +45,7 @@
           rgba(0, 0, 0, 0.35) 40%,
           transparent 80%
         );
-        opacity: 0.45;
+        opacity: 0.65;
       }
       .fade-in {
         animation: fadeIn 0.28s ease;
@@ -75,10 +79,10 @@
           transform 0.15s ease, background-color 0.2s ease;
       }
       .input-shell:focus-within {
-        border-color: rgba(0, 0, 0, 0.75);
-        box-shadow: 0 18px 50px -36px rgba(0, 0, 0, 0.65);
+        border-color: rgba(255, 255, 255, 0.65);
+        box-shadow: 0 18px 50px -36px rgba(255, 255, 255, 0.35);
         transform: translateY(-1px);
-        background-color: rgba(255, 255, 255, 0.85);
+        background-color: rgba(255, 255, 255, 0.08);
       }
       @media (prefers-reduced-motion: reduce) {
         .fade-in,
@@ -90,19 +94,16 @@
     </style>
   </head>
   <body
-    class="text-neutral-900 min-h-screen relative antialiased selection:bg-neutral-900/10 selection:text-neutral-900"
+    class="text-slate-50 min-h-screen relative antialiased selection:bg-white/10 selection:text-white"
   >
     <div class="pointer-events-none absolute inset-0 overflow-hidden">
+      <div class="grid-lines absolute inset-0 opacity-70" aria-hidden="true"></div>
       <div
-        class="grid-lines absolute inset-0 opacity-60"
+        class="absolute -left-28 top-10 h-64 w-64 bg-white/5 blur-3xl float-slow"
         aria-hidden="true"
       ></div>
       <div
-        class="absolute -left-28 top-10 h-64 w-64 bg-neutral-900/5 blur-3xl float-slow"
-        aria-hidden="true"
-      ></div>
-      <div
-        class="absolute right-0 bottom-10 h-72 w-72 bg-neutral-900/10 blur-3xl float-slower"
+        class="absolute right-0 bottom-10 h-72 w-72 bg-white/10 blur-3xl float-slower"
         aria-hidden="true"
       ></div>
     </div>
@@ -111,24 +112,24 @@
       <div class="flex flex-wrap items-center gap-3 justify-between">
         <div class="flex items-center gap-3">
           <div
-            class="h-9 w-9 rounded-full border border-neutral-200 bg-white shadow-sm grid place-items-center text-xs font-semibold uppercase tracking-[0.18em]"
+            class="h-9 w-9 rounded-full border border-white/20 bg-white/10 shadow-sm shadow-white/10 grid place-items-center text-xs font-semibold uppercase tracking-[0.18em] text-white"
           >
             M
           </div>
           <div>
-            <p class="text-xs uppercase tracking-[0.28em] text-neutral-500">
+            <p class="text-xs uppercase tracking-[0.28em] text-slate-400">
               MEO Short
             </p>
-            <h1 class="text-2xl sm:text-3xl font-semibold text-neutral-900">
+            <h1 class="text-2xl sm:text-3xl font-semibold text-white">
               Minimal link studio
             </h1>
           </div>
         </div>
-        <div class="flex items-center gap-2 text-xs text-neutral-600">
-          <span class="rounded-full border border-neutral-200 px-3 py-1">
+        <div class="flex items-center gap-2 text-xs text-slate-200">
+          <span class="rounded-full border border-white/20 px-3 py-1 bg-white/5">
             No login
           </span>
-          <span class="rounded-full border border-neutral-200 px-3 py-1">
+          <span class="rounded-full border border-white/20 px-3 py-1 bg-white/5">
             HTTPS ready
           </span>
         </div>
@@ -136,74 +137,72 @@
     </header>
 
     <main class="relative z-10 px-5 sm:px-8 pb-12 max-w-6xl mx-auto">
-      <div class="rounded-3xl border border-neutral-200/80 bg-white/70 shadow-2xl shadow-black/5 backdrop-blur">
-        <div
-          class="grid gap-10 lg:grid-cols-[1.05fr,0.95fr] p-6 sm:p-10"
-        >
+      <div class="rounded-3xl border border-white/10 bg-black/40 shadow-[0_20px_80px_rgba(0,0,0,0.55)] backdrop-blur">
+        <div class="grid gap-10 lg:grid-cols-[1.05fr,0.95fr] p-6 sm:p-10">
           <section class="space-y-8">
             <div class="space-y-3">
-              <p class="text-xs uppercase tracking-[0.3em] text-neutral-500">
+              <p class="text-xs uppercase tracking-[0.3em] text-slate-400">
                 Start here
               </p>
               <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
                 <div class="space-y-2">
-                  <h2 class="text-3xl sm:text-4xl font-semibold leading-tight">
+                  <h2 class="text-3xl sm:text-4xl font-semibold leading-tight text-white">
                     Short links, no noise.
                   </h2>
-                  <p class="text-sm text-neutral-600 max-w-xl">
+                  <p class="text-sm text-slate-300 max-w-xl">
                     วางปลายทาง เลือก slug ขาวดำเรียบง่าย กดครั้งเดียวได้ลิงก์พร้อมแชร์
                     รองรับมือถือ แท็บเล็ต และเดสก์ท็อป.
                   </p>
                 </div>
-                <div class="inline-flex items-center gap-2 text-xs text-neutral-600">
-                  <span class="h-2 w-2 rounded-full bg-neutral-900"></span>
-                  <span>live redirect</span>
+                <div class="inline-flex items-center gap-2 text-xs text-slate-200">
+                  <span class="h-2 w-2 rounded-full bg-white"></span>
+                  <span class="text-white">live redirect</span>
                 </div>
               </div>
             </div>
 
             <form id="shortenForm" class="space-y-6">
               <div class="space-y-2">
-                <label class="text-xs uppercase tracking-[0.2em] text-neutral-500"
+                <label class="text-xs uppercase tracking-[0.2em] text-slate-400"
                   >Destination URL</label
                 >
                 <div
-                  class="input-shell rounded-2xl border border-neutral-200 bg-white/80"
+                  class="input-shell rounded-2xl border border-white/15 bg-white/5"
                 >
                   <input
                     type="url"
                     id="urlInput"
                     required
                     placeholder="https://example.com/very/long/link"
-                    class="w-full bg-transparent px-4 py-3.5 outline-none text-sm sm:text-base"
+                    class="w-full bg-transparent px-4 py-3.5 outline-none text-sm sm:text-base text-slate-50 placeholder:text-slate-500"
                     autocomplete="off"
                   />
                 </div>
-                <p class="text-xs text-neutral-500">
+                <p class="text-xs text-slate-400">
                   ใช้ https:// หรือ http:// เพื่อให้ redirect ปลอดภัย
                 </p>
               </div>
 
               <div class="space-y-2">
-                <label class="text-xs uppercase tracking-[0.2em] text-neutral-500"
+                <label class="text-xs uppercase tracking-[0.2em] text-slate-400"
                   >Custom slug (optional)</label
                 >
                 <div
-                  class="input-shell flex items-center rounded-2xl border border-neutral-200 bg-white/80 overflow-hidden"
+                  class="input-shell flex items-center rounded-2xl border border-white/15 bg-white/5 overflow-hidden"
                 >
                   <span
                     id="slugPrefix"
-                    class="px-4 text-sm sm:text-base text-neutral-500 border-r border-neutral-200 whitespace-nowrap bg-neutral-50"
+                    class="px-4 text-sm sm:text-base text-slate-300 border-r border-white/10 whitespace-nowrap bg-white/5"
                   ></span>
                   <input
                     type="text"
                     id="slugInput"
                     placeholder="my-link"
-                    class="w-full bg-transparent px-3 sm:px-4 py-3.5 outline-none text-sm sm:text-base"
+                    class="w-full bg-transparent px-3 sm:px-4 py-3.5 outline-none text-sm sm:text-base text-slate-50 placeholder:text-slate-500"
                     autocomplete="off"
                   />
                 </div>
-                <p class="text-xs text-neutral-500">
+                <p class="text-xs text-slate-400">
                   ตัวอักษร a-z 0-9 - _ เท่านั้น (เว้นว่างให้ระบบสุ่ม)
                 </p>
               </div>
@@ -211,7 +210,7 @@
               <button
                 id="submitBtn"
                 type="submit"
-                class="group w-full inline-flex items-center justify-center gap-3 rounded-2xl bg-neutral-900 text-white font-semibold py-3.5 shadow-lg shadow-black/15 hover:-translate-y-[1px] active:translate-y-[0.5px] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-neutral-900/40"
+                class="group w-full inline-flex items-center justify-center gap-3 rounded-2xl bg-white/10 text-white font-semibold py-3.5 shadow-lg shadow-white/10 border border-white/15 hover:-translate-y-[1px] active:translate-y-[0.5px] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/30"
               >
                 <span
                   id="loadingIcon"
@@ -228,9 +227,9 @@
 
             <div
               id="resultArea"
-              class="hidden rounded-2xl border border-neutral-200 bg-neutral-50/80 p-5 sm:p-6 fade-in"
+              class="hidden rounded-2xl border border-white/15 bg-white/5 p-5 sm:p-6 fade-in"
             >
-              <p class="text-xs uppercase tracking-[0.24em] text-neutral-500 mb-2">
+              <p class="text-xs uppercase tracking-[0.24em] text-slate-400 mb-2">
                 Ready to share
               </p>
               <div
@@ -241,74 +240,74 @@
                   href="#"
                   target="_blank"
                   rel="noopener"
-                  class="text-lg font-semibold text-neutral-900 break-all hover:underline underline-offset-4"
+                  class="text-lg font-semibold text-white break-all hover:underline underline-offset-4"
                 ></a>
                 <button
                   id="copyBtn"
                   type="button"
-                  class="inline-flex items-center gap-2 rounded-xl border border-neutral-300 bg-white px-3.5 py-2.5 text-sm text-neutral-800 hover:border-neutral-500 transition-colors"
+                  class="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-3.5 py-2.5 text-sm text-slate-100 hover:border-white/40 transition-colors"
                 >
                   <span>Copy</span>
                 </button>
               </div>
               <p
                 id="destinationPreview"
-                class="text-xs text-neutral-500 mt-2"
+                class="text-xs text-slate-400 mt-2"
               ></p>
             </div>
 
-            <p id="errorMsg" class="hidden text-rose-600 text-sm"></p>
+            <p id="errorMsg" class="hidden text-rose-300 text-sm"></p>
           </section>
 
           <aside
-            class="rounded-2xl border border-neutral-200 bg-neutral-50/70 p-5 sm:p-6 space-y-6 shadow-inner shadow-black/5"
+            class="rounded-2xl border border-white/12 bg-white/5 p-5 sm:p-6 space-y-6 shadow-inner shadow-white/10"
           >
             <div class="flex items-center justify-between">
-              <span class="text-sm font-medium text-neutral-800">Flow</span>
+              <span class="text-sm font-medium text-white">Flow</span>
               <span
-                class="text-[11px] rounded-full border border-neutral-200 px-3 py-1 text-neutral-600"
+                class="text-[11px] rounded-full border border-white/20 px-3 py-1 text-slate-200 bg-white/5"
                 >15s setup</span
               >
             </div>
-            <ul class="space-y-4 text-sm text-neutral-700">
+            <ul class="space-y-4 text-sm text-slate-200">
               <li class="flex items-start gap-3">
-                <span class="mt-1 h-2 w-2 rounded-full bg-neutral-900"></span>
+                <span class="mt-1 h-2 w-2 rounded-full bg-white"></span>
                 <span>วาง URL ปลายทาง ระบบตรวจ protocol ให้เรียบร้อย</span>
               </li>
               <li class="flex items-start gap-3">
-                <span class="mt-1 h-2 w-2 rounded-full bg-neutral-900"></span>
+                <span class="mt-1 h-2 w-2 rounded-full bg-white"></span>
                 <span>ใส่ slug เองหรือปล่อยให้สุ่มแบบมินิมอล</span>
               </li>
               <li class="flex items-start gap-3">
-                <span class="mt-1 h-2 w-2 rounded-full bg-neutral-900"></span>
+                <span class="mt-1 h-2 w-2 rounded-full bg-white"></span>
                 <span>กดสร้าง คัดลอกลิงก์ แชร์ได้เลย รองรับทุกอุปกรณ์</span>
               </li>
             </ul>
             <div
-              class="rounded-xl border border-neutral-200 bg-white/80 p-4 space-y-2"
+              class="rounded-xl border border-white/12 bg-white/5 p-4 space-y-2"
             >
-              <p class="text-xs uppercase tracking-[0.18em] text-neutral-500">
+              <p class="text-xs uppercase tracking-[0.18em] text-slate-400">
                 Minimal tips
               </p>
-              <p class="text-sm text-neutral-700">
+              <p class="text-sm text-slate-200">
                 ใช้ slug สั้น จำง่าย วางเป็นคิวอาร์หรือส่งข้อความก็อ่านง่ายในธีมขาวดำ.
               </p>
             </div>
-            <div class="grid gap-3 sm:grid-cols-3 text-xs text-neutral-600">
-              <div class="flex flex-col gap-1 rounded-lg border border-neutral-200 bg-white/70 p-3">
-                <span class="text-[10px] uppercase tracking-[0.18em]">Speed</span>
-                <span class="text-base font-semibold text-neutral-900">Instant</span>
-                <span class="text-[11px] text-neutral-500">สร้างลิงก์รวดเดียว</span>
+            <div class="grid gap-3 sm:grid-cols-3 text-xs text-slate-300">
+              <div class="flex flex-col gap-1 rounded-lg border border-white/10 bg-white/5 p-3">
+                <span class="text-[10px] uppercase tracking-[0.18em] text-slate-400">Speed</span>
+                <span class="text-base font-semibold text-white">Instant</span>
+                <span class="text-[11px] text-slate-400">สร้างลิงก์รวดเดียว</span>
               </div>
-              <div class="flex flex-col gap-1 rounded-lg border border-neutral-200 bg-white/70 p-3">
-                <span class="text-[10px] uppercase tracking-[0.18em]">Privacy</span>
-                <span class="text-base font-semibold text-neutral-900">No login</span>
-                <span class="text-[11px] text-neutral-500">ไม่มีโฆษณา</span>
+              <div class="flex flex-col gap-1 rounded-lg border border-white/10 bg-white/5 p-3">
+                <span class="text-[10px] uppercase tracking-[0.18em] text-slate-400">Privacy</span>
+                <span class="text-base font-semibold text-white">No login</span>
+                <span class="text-[11px] text-slate-400">ไม่มีโฆษณา</span>
               </div>
-              <div class="flex flex-col gap-1 rounded-lg border border-neutral-200 bg-white/70 p-3">
-                <span class="text-[10px] uppercase tracking-[0.18em]">Clicks</span>
-                <span class="text-base font-semibold text-neutral-900">Tracked</span>
-                <span class="text-[11px] text-neutral-500">นับยอดฝั่งเซิร์ฟเวอร์</span>
+              <div class="flex flex-col gap-1 rounded-lg border border-white/10 bg-white/5 p-3">
+                <span class="text-[10px] uppercase tracking-[0.18em] text-slate-400">Clicks</span>
+                <span class="text-base font-semibold text-white">Tracked</span>
+                <span class="text-[11px] text-slate-400">นับยอดฝั่งเซิร์ฟเวอร์</span>
               </div>
             </div>
           </aside>
@@ -426,16 +425,16 @@
         try {
           await navigator.clipboard.writeText(value);
           copyBtn.classList.add(
-            "border-neutral-900",
-            "text-neutral-900",
-            "bg-neutral-100"
+            "border-white",
+            "text-white",
+            "bg-white/20"
           );
           copyBtn.firstElementChild.textContent = "Copied";
           setTimeout(() => {
             copyBtn.classList.remove(
-              "border-neutral-900",
-              "text-neutral-900",
-              "bg-neutral-100"
+              "border-white",
+              "text-white",
+              "bg-white/20"
             );
             copyBtn.firstElementChild.textContent = "Copy";
           }, 1200);
