@@ -5,8 +5,9 @@ WORKDIR /app
 COPY package.json bun.lock ./
 RUN bun install --production
 
-# Copy source
+# Copy source and static assets
 COPY src src
+COPY njz.png ./njz.png
 
 # Setup Volume สำหรับเก็บไฟล์ DB (สำคัญ! ไม่งั้น restart แล้วหาย)
 VOLUME /app/data

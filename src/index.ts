@@ -38,8 +38,8 @@ const incrementClick = db.prepare(
 const app = new Elysia()
   // 1. หน้าบ้าน
   .get("/", () => Bun.file("src/index.html"))
-  .get("/njz.png", () => Bun.file("src/njz.png"))
-  .get("/favicon.ico", () => Bun.file("src/njz.png"))
+  .get("/njz.png", () => Bun.file("njz.png"))
+  .get("/favicon.ico", () => Bun.file("njz.png"))
 
   // 2. API สร้าง Link (Debug Version)
   .post(
