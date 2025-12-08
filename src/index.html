@@ -14,210 +14,305 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
       :root {
-        color-scheme: dark;
+        color-scheme: light;
       }
       body {
         font-family: "Space Grotesk", "SF Pro Display", "Soehne", system-ui,
           -apple-system, sans-serif;
+        background: radial-gradient(circle at 20% 20%, #fdfdfd, #f7f7f5 45%),
+          radial-gradient(circle at 80% 0%, #f3f3f3, transparent 40%),
+          #f8f8f6;
+      }
+      .grid-lines {
+        background-image: linear-gradient(
+            to right,
+            rgba(0, 0, 0, 0.035) 1px,
+            transparent 1px
+          ),
+          linear-gradient(to bottom, rgba(0, 0, 0, 0.035) 1px, transparent 1px);
+        background-size: 38px 38px;
+        mask-image: radial-gradient(
+          circle at center,
+          rgba(0, 0, 0, 0.35) 40%,
+          transparent 80%
+        );
+        -webkit-mask-image: radial-gradient(
+          circle at center,
+          rgba(0, 0, 0, 0.35) 40%,
+          transparent 80%
+        );
+        opacity: 0.45;
       }
       .fade-in {
-        animation: fadeIn 0.35s ease;
+        animation: fadeIn 0.28s ease;
       }
       @keyframes fadeIn {
         from {
           opacity: 0;
-          transform: translateY(4px);
+          transform: translateY(6px);
         }
         to {
           opacity: 1;
           transform: translateY(0);
         }
       }
+      .float-slow {
+        animation: float 9s ease-in-out infinite alternate;
+      }
+      .float-slower {
+        animation: float 12s ease-in-out infinite alternate;
+      }
+      @keyframes float {
+        from {
+          transform: translateY(0px) translateX(0);
+        }
+        to {
+          transform: translateY(-12px) translateX(8px);
+        }
+      }
       .input-shell {
         transition: border-color 0.2s ease, box-shadow 0.2s ease,
-          transform 0.15s ease;
+          transform 0.15s ease, background-color 0.2s ease;
       }
       .input-shell:focus-within {
-        border-color: rgba(52, 211, 153, 0.75);
-        box-shadow: 0 12px 38px -26px rgba(52, 211, 153, 0.8);
+        border-color: rgba(0, 0, 0, 0.75);
+        box-shadow: 0 18px 50px -36px rgba(0, 0, 0, 0.65);
         transform: translateY(-1px);
+        background-color: rgba(255, 255, 255, 0.85);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .fade-in,
+        .float-slow,
+        .float-slower {
+          animation: none;
+        }
       }
     </style>
   </head>
   <body
-    class="bg-slate-950 text-slate-100 min-h-screen relative antialiased selection:bg-emerald-500/20"
+    class="text-neutral-900 min-h-screen relative antialiased selection:bg-neutral-900/10 selection:text-neutral-900"
   >
     <div class="pointer-events-none absolute inset-0 overflow-hidden">
       <div
-        class="absolute -left-24 -top-24 h-64 w-64 bg-emerald-500/10 blur-3xl"
+        class="grid-lines absolute inset-0 opacity-60"
+        aria-hidden="true"
       ></div>
       <div
-        class="absolute right-0 bottom-0 h-72 w-72 bg-cyan-500/10 blur-3xl"
+        class="absolute -left-28 top-10 h-64 w-64 bg-neutral-900/5 blur-3xl float-slow"
+        aria-hidden="true"
+      ></div>
+      <div
+        class="absolute right-0 bottom-10 h-72 w-72 bg-neutral-900/10 blur-3xl float-slower"
+        aria-hidden="true"
       ></div>
     </div>
 
-    <main
-      class="relative min-h-screen flex items-center justify-center px-4 py-12"
-    >
-      <div
-        class="w-full max-w-5xl grid gap-6 md:grid-cols-[1.2fr,0.9fr] items-start"
-      >
-        <section
-          class="rounded-2xl border border-slate-800 bg-slate-900/70 shadow-2xl backdrop-blur-sm p-8"
-        >
-          <div class="flex items-start justify-between gap-4">
-            <div>
-              <p
-                class="text-[11px] uppercase tracking-[0.4em] text-emerald-300/70"
-              >
-                Link studio
-              </p>
-              <h1 class="text-3xl font-semibold text-white mt-2">MEO Short</h1>
-              <p class="text-sm text-slate-400 mt-2">
-                Trim long links into clean, shareable URLs in one click.
-              </p>
-            </div>
-            <div
-              class="rounded-full border border-slate-800 bg-slate-900 px-4 py-2 text-emerald-300 text-xs"
-            >
-              Minimal mode
-            </div>
+    <header class="relative z-10 px-5 sm:px-8 pt-10 pb-6 max-w-6xl mx-auto">
+      <div class="flex flex-wrap items-center gap-3 justify-between">
+        <div class="flex items-center gap-3">
+          <div
+            class="h-9 w-9 rounded-full border border-neutral-200 bg-white shadow-sm grid place-items-center text-xs font-semibold uppercase tracking-[0.18em]"
+          >
+            M
           </div>
+          <div>
+            <p class="text-xs uppercase tracking-[0.28em] text-neutral-500">
+              MEO Short
+            </p>
+            <h1 class="text-2xl sm:text-3xl font-semibold text-neutral-900">
+              Minimal link studio
+            </h1>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 text-xs text-neutral-600">
+          <span class="rounded-full border border-neutral-200 px-3 py-1">
+            No login
+          </span>
+          <span class="rounded-full border border-neutral-200 px-3 py-1">
+            HTTPS ready
+          </span>
+        </div>
+      </div>
+    </header>
 
-          <form id="shortenForm" class="mt-6 space-y-4">
-            <div class="space-y-2">
-              <label class="text-xs uppercase tracking-wide text-slate-400"
-                >Destination URL</label
-              >
-              <div
-                class="input-shell rounded-xl border border-slate-800 bg-slate-950/70 focus-within:bg-slate-900/70"
-              >
-                <input
-                  type="url"
-                  id="urlInput"
-                  required
-                  placeholder="https://example.com/very/long/link"
-                  class="w-full bg-transparent px-4 py-3 outline-none text-sm caret-emerald-400"
-                  autocomplete="off"
-                />
-              </div>
-              <p class="text-[11px] text-slate-500">
-                ใช้ https:// หรือ http:// เพื่อให้ redirect ปลอดภัย
+    <main class="relative z-10 px-5 sm:px-8 pb-12 max-w-6xl mx-auto">
+      <div class="rounded-3xl border border-neutral-200/80 bg-white/70 shadow-2xl shadow-black/5 backdrop-blur">
+        <div
+          class="grid gap-10 lg:grid-cols-[1.05fr,0.95fr] p-6 sm:p-10"
+        >
+          <section class="space-y-8">
+            <div class="space-y-3">
+              <p class="text-xs uppercase tracking-[0.3em] text-neutral-500">
+                Start here
               </p>
+              <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+                <div class="space-y-2">
+                  <h2 class="text-3xl sm:text-4xl font-semibold leading-tight">
+                    Short links, no noise.
+                  </h2>
+                  <p class="text-sm text-neutral-600 max-w-xl">
+                    วางปลายทาง เลือก slug ขาวดำเรียบง่าย กดครั้งเดียวได้ลิงก์พร้อมแชร์
+                    รองรับมือถือ แท็บเล็ต และเดสก์ท็อป.
+                  </p>
+                </div>
+                <div class="inline-flex items-center gap-2 text-xs text-neutral-600">
+                  <span class="h-2 w-2 rounded-full bg-neutral-900"></span>
+                  <span>live redirect</span>
+                </div>
+              </div>
             </div>
 
-            <div class="space-y-2">
-              <label class="text-xs uppercase tracking-wide text-slate-400"
-                >Custom slug (optional)</label
-              >
-              <div
-                class="input-shell flex items-center rounded-xl border border-slate-800 bg-slate-950/70 focus-within:bg-slate-900/70"
+            <form id="shortenForm" class="space-y-6">
+              <div class="space-y-2">
+                <label class="text-xs uppercase tracking-[0.2em] text-neutral-500"
+                  >Destination URL</label
+                >
+                <div
+                  class="input-shell rounded-2xl border border-neutral-200 bg-white/80"
+                >
+                  <input
+                    type="url"
+                    id="urlInput"
+                    required
+                    placeholder="https://example.com/very/long/link"
+                    class="w-full bg-transparent px-4 py-3.5 outline-none text-sm sm:text-base"
+                    autocomplete="off"
+                  />
+                </div>
+                <p class="text-xs text-neutral-500">
+                  ใช้ https:// หรือ http:// เพื่อให้ redirect ปลอดภัย
+                </p>
+              </div>
+
+              <div class="space-y-2">
+                <label class="text-xs uppercase tracking-[0.2em] text-neutral-500"
+                  >Custom slug (optional)</label
+                >
+                <div
+                  class="input-shell flex items-center rounded-2xl border border-neutral-200 bg-white/80 overflow-hidden"
+                >
+                  <span
+                    id="slugPrefix"
+                    class="px-4 text-sm sm:text-base text-neutral-500 border-r border-neutral-200 whitespace-nowrap bg-neutral-50"
+                  ></span>
+                  <input
+                    type="text"
+                    id="slugInput"
+                    placeholder="my-link"
+                    class="w-full bg-transparent px-3 sm:px-4 py-3.5 outline-none text-sm sm:text-base"
+                    autocomplete="off"
+                  />
+                </div>
+                <p class="text-xs text-neutral-500">
+                  ตัวอักษร a-z 0-9 - _ เท่านั้น (เว้นว่างให้ระบบสุ่ม)
+                </p>
+              </div>
+
+              <button
+                id="submitBtn"
+                type="submit"
+                class="group w-full inline-flex items-center justify-center gap-3 rounded-2xl bg-neutral-900 text-white font-semibold py-3.5 shadow-lg shadow-black/15 hover:-translate-y-[1px] active:translate-y-[0.5px] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-neutral-900/40"
               >
                 <span
-                  id="slugPrefix"
-                  class="px-4 text-sm text-slate-500 border-r border-slate-800 whitespace-nowrap"
+                  id="loadingIcon"
+                  class="hidden h-4 w-4 rounded-full border-2 border-white/40 border-l-white animate-spin"
                 ></span>
-                <input
-                  type="text"
-                  id="slugInput"
-                  placeholder="my-link"
-                  class="w-full bg-transparent px-3 py-3 outline-none text-sm caret-emerald-400"
-                  autocomplete="off"
-                />
+                <span id="submitText">Create short link</span>
+                <span
+                  class="text-lg leading-none translate-y-[1px] group-hover:translate-x-0.5 transition-transform"
+                  aria-hidden="true"
+                  >→</span
+                >
+              </button>
+            </form>
+
+            <div
+              id="resultArea"
+              class="hidden rounded-2xl border border-neutral-200 bg-neutral-50/80 p-5 sm:p-6 fade-in"
+            >
+              <p class="text-xs uppercase tracking-[0.24em] text-neutral-500 mb-2">
+                Ready to share
+              </p>
+              <div
+                class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <a
+                  id="shortLink"
+                  href="#"
+                  target="_blank"
+                  rel="noopener"
+                  class="text-lg font-semibold text-neutral-900 break-all hover:underline underline-offset-4"
+                ></a>
+                <button
+                  id="copyBtn"
+                  type="button"
+                  class="inline-flex items-center gap-2 rounded-xl border border-neutral-300 bg-white px-3.5 py-2.5 text-sm text-neutral-800 hover:border-neutral-500 transition-colors"
+                >
+                  <span>Copy</span>
+                </button>
               </div>
-              <p class="text-[11px] text-slate-500">
-                ตัวอักษร a-z 0-9 - _ เท่านั้น (เว้นว่างให้ระบบสุ่ม)
+              <p
+                id="destinationPreview"
+                class="text-xs text-neutral-500 mt-2"
+              ></p>
+            </div>
+
+            <p id="errorMsg" class="hidden text-rose-600 text-sm"></p>
+          </section>
+
+          <aside
+            class="rounded-2xl border border-neutral-200 bg-neutral-50/70 p-5 sm:p-6 space-y-6 shadow-inner shadow-black/5"
+          >
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-medium text-neutral-800">Flow</span>
+              <span
+                class="text-[11px] rounded-full border border-neutral-200 px-3 py-1 text-neutral-600"
+                >15s setup</span
+              >
+            </div>
+            <ul class="space-y-4 text-sm text-neutral-700">
+              <li class="flex items-start gap-3">
+                <span class="mt-1 h-2 w-2 rounded-full bg-neutral-900"></span>
+                <span>วาง URL ปลายทาง ระบบตรวจ protocol ให้เรียบร้อย</span>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="mt-1 h-2 w-2 rounded-full bg-neutral-900"></span>
+                <span>ใส่ slug เองหรือปล่อยให้สุ่มแบบมินิมอล</span>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="mt-1 h-2 w-2 rounded-full bg-neutral-900"></span>
+                <span>กดสร้าง คัดลอกลิงก์ แชร์ได้เลย รองรับทุกอุปกรณ์</span>
+              </li>
+            </ul>
+            <div
+              class="rounded-xl border border-neutral-200 bg-white/80 p-4 space-y-2"
+            >
+              <p class="text-xs uppercase tracking-[0.18em] text-neutral-500">
+                Minimal tips
+              </p>
+              <p class="text-sm text-neutral-700">
+                ใช้ slug สั้น จำง่าย วางเป็นคิวอาร์หรือส่งข้อความก็อ่านง่ายในธีมขาวดำ.
               </p>
             </div>
-
-            <button
-              id="submitBtn"
-              type="submit"
-              class="group w-full inline-flex items-center justify-center gap-3 rounded-xl bg-emerald-400 text-slate-950 font-semibold py-3 shadow-lg shadow-emerald-900/40 hover:bg-emerald-300 transition-all active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-emerald-500/60"
-            >
-              <span
-                id="loadingIcon"
-                class="hidden h-4 w-4 rounded-full border-2 border-slate-900/40 border-l-slate-950 animate-spin"
-              ></span>
-              <span id="submitText">Create short link</span>
-              <span
-                class="text-lg leading-none translate-y-[1px] group-hover:translate-x-0.5 transition-transform"
-                aria-hidden="true"
-                >→</span
-              >
-            </button>
-          </form>
-
-          <div
-            id="resultArea"
-            class="hidden mt-6 rounded-xl border border-emerald-900 bg-slate-900/80 p-5 fade-in"
-          >
-            <p class="text-xs uppercase tracking-wide text-emerald-300/80 mb-2">
-              Ready to share
-            </p>
-            <div
-              class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
-            >
-              <a
-                id="shortLink"
-                href="#"
-                target="_blank"
-                rel="noopener"
-                class="text-lg font-semibold text-white break-all hover:text-emerald-200"
-              ></a>
-              <button
-                id="copyBtn"
-                type="button"
-                class="inline-flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 hover:border-emerald-500/60 hover:text-emerald-200 transition-colors"
-              >
-                <span>Copy</span>
-              </button>
+            <div class="grid gap-3 sm:grid-cols-3 text-xs text-neutral-600">
+              <div class="flex flex-col gap-1 rounded-lg border border-neutral-200 bg-white/70 p-3">
+                <span class="text-[10px] uppercase tracking-[0.18em]">Speed</span>
+                <span class="text-base font-semibold text-neutral-900">Instant</span>
+                <span class="text-[11px] text-neutral-500">สร้างลิงก์รวดเดียว</span>
+              </div>
+              <div class="flex flex-col gap-1 rounded-lg border border-neutral-200 bg-white/70 p-3">
+                <span class="text-[10px] uppercase tracking-[0.18em]">Privacy</span>
+                <span class="text-base font-semibold text-neutral-900">No login</span>
+                <span class="text-[11px] text-neutral-500">ไม่มีโฆษณา</span>
+              </div>
+              <div class="flex flex-col gap-1 rounded-lg border border-neutral-200 bg-white/70 p-3">
+                <span class="text-[10px] uppercase tracking-[0.18em]">Clicks</span>
+                <span class="text-base font-semibold text-neutral-900">Tracked</span>
+                <span class="text-[11px] text-neutral-500">นับยอดฝั่งเซิร์ฟเวอร์</span>
+              </div>
             </div>
-            <p
-              id="destinationPreview"
-              class="text-[11px] text-slate-500 mt-2"
-            ></p>
-          </div>
-
-          <p id="errorMsg" class="hidden mt-4 text-rose-300 text-sm"></p>
-        </section>
-
-        <aside
-          class="rounded-2xl border border-slate-800 bg-slate-900/50 p-6 space-y-4 shadow-xl backdrop-blur-sm"
-        >
-          <div class="flex items-center justify-between">
-            <span class="text-sm text-slate-300">How it works</span>
-            <span
-              class="text-[11px] rounded-full border border-slate-800 px-3 py-1 text-slate-400"
-              >No login</span
-            >
-          </div>
-          <ul class="space-y-3 text-sm text-slate-300">
-            <li class="flex items-start gap-3">
-              <span class="mt-1 h-2 w-2 rounded-full bg-emerald-400"></span>
-              <span
-                >Paste a destination URL. We validate protocol for safe
-                redirects.</span
-              >
-            </li>
-            <li class="flex items-start gap-3">
-              <span class="mt-1 h-2 w-2 rounded-full bg-emerald-400"></span>
-              <span>Add a custom slug or let us generate a clean one.</span>
-            </li>
-            <li class="flex items-start gap-3">
-              <span class="mt-1 h-2 w-2 rounded-full bg-emerald-400"></span>
-              <span>Share the short link. We track clicks server-side.</span>
-            </li>
-          </ul>
-          <div
-            class="rounded-xl border border-slate-800 bg-slate-950/70 p-4 space-y-2"
-          >
-            <p class="text-xs uppercase tracking-wide text-slate-400">Tip</p>
-            <p class="text-sm text-slate-300">
-              กดคัดลอกแล้วแชร์ได้เลย ลิงก์จะพาไปยังปลายทางที่ตั้งค่าไว้
-            </p>
-          </div>
-        </aside>
+          </aside>
+        </div>
       </div>
     </main>
 
@@ -330,10 +425,18 @@
 
         try {
           await navigator.clipboard.writeText(value);
-          copyBtn.classList.add("border-emerald-500", "text-emerald-200");
+          copyBtn.classList.add(
+            "border-neutral-900",
+            "text-neutral-900",
+            "bg-neutral-100"
+          );
           copyBtn.firstElementChild.textContent = "Copied";
           setTimeout(() => {
-            copyBtn.classList.remove("border-emerald-500", "text-emerald-200");
+            copyBtn.classList.remove(
+              "border-neutral-900",
+              "text-neutral-900",
+              "bg-neutral-100"
+            );
             copyBtn.firstElementChild.textContent = "Copy";
           }, 1200);
         } catch (err) {
