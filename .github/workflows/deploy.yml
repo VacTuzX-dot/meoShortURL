@@ -6,51 +6,62 @@ on:
       - main
 
 env:
+  # ดึงค่าจาก Secrets มาพักไว้
   APP_DIR: ${{ secrets.APP_DIR }}
   SSH_HOST: ${{ secrets.SSH_HOST }}
   SSH_USER: ${{ secrets.SSH_USER }}
   SSH_PORT: ${{ secrets.SSH_PORT }}
+  # ค่า Config ของแอป
   BASE_URL: ${{ secrets.BASE_URL }}
   PORT: ${{ secrets.PORT }}
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: ${{ env.SSH_HOST != '' && env.SSH_USER != '' && env.APP_DIR != '' && secrets.SSH_KEY != '' }}
+    # เช็คว่ามี Secret ครบไหมก่อนรัน จะได้ไม่ Error กลางทาง
+    if: ${{ secrets.SSH_HOST != '' && secrets.SSH_USER != '' && secrets.APP_DIR != '' && secrets.SSH_KEY != '' }}
+
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup SSH
+      - name: Setup SSH Key
         env:
           SSH_KEY: ${{ secrets.SSH_KEY }}
         run: |
-          set -e
           mkdir -p ~/.ssh
           echo "$SSH_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
+          # เพิ่ม Host Key เพื่อไม่ให้ถาม yes/no ตอนเชื่อมต่อ
           ssh-keyscan -p "${SSH_PORT:-22}" "$SSH_HOST" >> ~/.ssh/known_hosts
 
       - name: Upload project files
         run: |
-          set -e
+          # สร้างโฟลเดอร์ปลายทาง
           ssh -p "${SSH_PORT:-22}" "$SSH_USER@$SSH_HOST" "mkdir -p '$APP_DIR'"
+
+          # บีบอัดไฟล์และส่งข้ามไป (ยกเว้นไฟล์ที่ไม่จำเป็น)
           tar -czf - \
             --exclude='.git' \
             --exclude='node_modules' \
             --exclude='.github' \
-            --exclude='urls.sqlite' \
+            --exclude='*.sqlite' \
+            --exclude='.env' \
             . | ssh -p "${SSH_PORT:-22}" "$SSH_USER@$SSH_HOST" "tar -xzf - -C '$APP_DIR'"
 
       - name: Deploy with Docker Compose
         run: |
-          set -e
           ssh -p "${SSH_PORT:-22}" "$SSH_USER@$SSH_HOST" <<EOF
             set -e
             cd "$APP_DIR"
-            export BASE_URL="${BASE_URL:-}"
-            export PORT="${PORT:-3000}"
-            docker compose down --remove-orphans || true
-            docker compose build --pull
-            docker compose up -d
+            
+            # 1. สร้างไฟล์ .env บน Server (เพื่อให้ Docker อ่านค่า PORT ได้)
+            echo "BASE_URL=${BASE_URL}" > .env
+            echo "PORT=${PORT}" >> .env
+            
+            # 2. สั่ง Build และ Run (ใช้ up --build แทน down เพื่อลด downtime)
+            docker compose up -d --build --remove-orphans
+            
+            # 3. ลบ Image ขยะที่ไม่ได้ใช้
+            docker image prune -f
           EOF
