@@ -1,0 +1,19 @@
+services:
+  app:
+    build:
+      context: .
+    container_name: meoshorturl
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3001}:3000"
+    environment:
+      - NODE_ENV=production
+      - DATA_DIR=/app/data
+      - DB_PATH=/app/data/urls.sqlite
+      - BASE_URL=${BASE_URL:-http://localhost:3001}
+    volumes:
+      - data:/app/data
+    command: ["bun", "src/index.ts"]
+
+volumes:
+  data:

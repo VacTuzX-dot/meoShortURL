@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MEO Shortener</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      body {
+        font-family: "Space Grotesk", "SF Pro Display", "Soehne", system-ui,
+          -apple-system, sans-serif;
+      }
+      .fade-in {
+        animation: fadeIn 0.35s ease;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .input-shell {
+        transition: border-color 0.2s ease, box-shadow 0.2s ease,
+          transform 0.15s ease;
+      }
+      .input-shell:focus-within {
+        border-color: rgba(52, 211, 153, 0.75);
+        box-shadow: 0 12px 38px -26px rgba(52, 211, 153, 0.8);
+        transform: translateY(-1px);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-slate-950 text-slate-100 min-h-screen relative antialiased selection:bg-emerald-500/20"
+  >
+    <div class="pointer-events-none absolute inset-0 overflow-hidden">
+      <div
+        class="absolute -left-24 -top-24 h-64 w-64 bg-emerald-500/10 blur-3xl"
+      ></div>
+      <div
+        class="absolute right-0 bottom-0 h-72 w-72 bg-cyan-500/10 blur-3xl"
+      ></div>
+    </div>
+
+    <main
+      class="relative min-h-screen flex items-center justify-center px-4 py-12"
+    >
+      <div
+        class="w-full max-w-5xl grid gap-6 md:grid-cols-[1.2fr,0.9fr] items-start"
+      >
+        <section
+          class="rounded-2xl border border-slate-800 bg-slate-900/70 shadow-2xl backdrop-blur-sm p-8"
+        >
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <p
+                class="text-[11px] uppercase tracking-[0.4em] text-emerald-300/70"
+              >
+                Link studio
+              </p>
+              <h1 class="text-3xl font-semibold text-white mt-2">MEO Short</h1>
+              <p class="text-sm text-slate-400 mt-2">
+                Trim long links into clean, shareable URLs in one click.
+              </p>
+            </div>
+            <div
+              class="rounded-full border border-slate-800 bg-slate-900 px-4 py-2 text-emerald-300 text-xs"
+            >
+              Minimal mode
+            </div>
+          </div>
+
+          <form id="shortenForm" class="mt-6 space-y-4">
+            <div class="space-y-2">
+              <label class="text-xs uppercase tracking-wide text-slate-400"
+                >Destination URL</label
+              >
+              <div
+                class="input-shell rounded-xl border border-slate-800 bg-slate-950/70 focus-within:bg-slate-900/70"
+              >
+                <input
+                  type="url"
+                  id="urlInput"
+                  required
+                  placeholder="https://example.com/very/long/link"
+                  class="w-full bg-transparent px-4 py-3 outline-none text-sm caret-emerald-400"
+                  autocomplete="off"
+                />
+              </div>
+              <p class="text-[11px] text-slate-500">
+                ใช้ https:// หรือ http:// เพื่อให้ redirect ปลอดภัย
+              </p>
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-xs uppercase tracking-wide text-slate-400"
+                >Custom slug (optional)</label
+              >
+              <div
+                class="input-shell flex items-center rounded-xl border border-slate-800 bg-slate-950/70 focus-within:bg-slate-900/70"
+              >
+                <span
+                  id="slugPrefix"
+                  class="px-4 text-sm text-slate-500 border-r border-slate-800 whitespace-nowrap"
+                ></span>
+                <input
+                  type="text"
+                  id="slugInput"
+                  placeholder="my-link"
+                  class="w-full bg-transparent px-3 py-3 outline-none text-sm caret-emerald-400"
+                  autocomplete="off"
+                />
+              </div>
+              <p class="text-[11px] text-slate-500">
+                ตัวอักษร a-z 0-9 - _ เท่านั้น (เว้นว่างให้ระบบสุ่ม)
+              </p>
+            </div>
+
+            <button
+              id="submitBtn"
+              type="submit"
+              class="group w-full inline-flex items-center justify-center gap-3 rounded-xl bg-emerald-400 text-slate-950 font-semibold py-3 shadow-lg shadow-emerald-900/40 hover:bg-emerald-300 transition-all active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-emerald-500/60"
+            >
+              <span
+                id="loadingIcon"
+                class="hidden h-4 w-4 rounded-full border-2 border-slate-900/40 border-l-slate-950 animate-spin"
+              ></span>
+              <span id="submitText">Create short link</span>
+              <span
+                class="text-lg leading-none translate-y-[1px] group-hover:translate-x-0.5 transition-transform"
+                aria-hidden="true"
+                >→</span
+              >
+            </button>
+          </form>
+
+          <div
+            id="resultArea"
+            class="hidden mt-6 rounded-xl border border-emerald-900 bg-slate-900/80 p-5 fade-in"
+          >
+            <p
+              class="text-xs uppercase tracking-wide text-emerald-300/80 mb-2"
+            >
+              Ready to share
+            </p>
+            <div
+              class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
+            >
+              <a
+                id="shortLink"
+                href="#"
+                target="_blank"
+                rel="noopener"
+                class="text-lg font-semibold text-white break-all hover:text-emerald-200"
+              ></a>
+              <button
+                id="copyBtn"
+                type="button"
+                class="inline-flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 hover:border-emerald-500/60 hover:text-emerald-200 transition-colors"
+              >
+                <span>Copy</span>
+              </button>
+            </div>
+            <p id="destinationPreview" class="text-[11px] text-slate-500 mt-2">
+              <!-- Filled by JS -->
+            </p>
+          </div>
+
+          <p id="errorMsg" class="hidden mt-4 text-rose-300 text-sm"></p>
+        </section>
+
+        <aside
+          class="rounded-2xl border border-slate-800 bg-slate-900/50 p-6 space-y-4 shadow-xl backdrop-blur-sm"
+        >
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-slate-300">How it works</span>
+            <span
+              class="text-[11px] rounded-full border border-slate-800 px-3 py-1 text-slate-400"
+              >No login</span
+            >
+          </div>
+          <ul class="space-y-3 text-sm text-slate-300">
+            <li class="flex items-start gap-3">
+              <span class="mt-1 h-2 w-2 rounded-full bg-emerald-400"></span>
+              <span>Paste a destination URL. We validate protocol for safe redirects.</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="mt-1 h-2 w-2 rounded-full bg-emerald-400"></span>
+              <span>Add a custom slug or let us generate a clean one.</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="mt-1 h-2 w-2 rounded-full bg-emerald-400"></span>
+              <span>Share the short link. We track clicks server-side.</span>
+            </li>
+          </ul>
+          <div
+            class="rounded-xl border border-slate-800 bg-slate-950/70 p-4 space-y-2"
+          >
+            <p class="text-xs uppercase tracking-wide text-slate-400">Tip</p>
+            <p class="text-sm text-slate-300">
+              กดคัดลอกแล้วแชร์ได้เลย ลิงก์จะพาไปยังปลายทางที่ตั้งค่าไว้
+            </p>
+          </div>
+        </aside>
+      </div>
+    </main>
+
+    <script>
+      const form = document.getElementById("shortenForm");
+      const urlInput = document.getElementById("urlInput");
+      const slugInput = document.getElementById("slugInput");
+      const slugPrefix = document.getElementById("slugPrefix");
+      const resultArea = document.getElementById("resultArea");
+      const shortLink = document.getElementById("shortLink");
+      const destinationPreview = document.getElementById("destinationPreview");
+      const errorMsg = document.getElementById("errorMsg");
+      const copyBtn = document.getElementById("copyBtn");
+      const submitBtn = document.getElementById("submitBtn");
+      const submitText = document.getElementById("submitText");
+      const loadingIcon = document.getElementById("loadingIcon");
+
+      const originHost = window.location.origin.replace(/\/$/, "");
+      slugPrefix.textContent = originHost + "/";
+
+      const setLoading = (isLoading) => {
+        submitBtn.disabled = isLoading;
+        submitBtn.classList.toggle("opacity-80", isLoading);
+        loadingIcon.classList.toggle("hidden", !isLoading);
+        submitText.textContent = isLoading ? "Working..." : "Create short link";
+      };
+
+      const showError = (message) => {
+        errorMsg.textContent = message;
+        errorMsg.classList.remove("hidden");
+        resultArea.classList.add("hidden");
+      };
+
+      const clearFeedback = () => {
+        errorMsg.classList.add("hidden");
+        errorMsg.textContent = "";
+        resultArea.classList.add("hidden");
+      };
+
+      const showResult = (shortUrl, originalUrl) => {
+        shortLink.href = shortUrl;
+        shortLink.textContent = shortUrl;
+        destinationPreview.textContent = `Forwarding to ${originalUrl}`;
+        resultArea.classList.remove("hidden");
+        resultArea.classList.add("fade-in");
+      };
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        clearFeedback();
+
+        const url = urlInput.value.trim();
+        const customSlug = slugInput.value.trim();
+
+        if (!url) {
+          showError("กรุณาใส่ URL ที่ต้องการย่อ");
+          return;
+        }
+
+        try {
+          new URL(url);
+        } catch {
+          showError("URL ไม่ถูกต้อง (ต้องขึ้นต้นด้วย http หรือ https)");
+          return;
+        }
+
+        if (customSlug && !/^[a-zA-Z0-9-_]{2,50}$/.test(customSlug)) {
+          showError("Slug ใช้ได้เฉพาะ a-z, 0-9, -, _ (2-50 ตัว)");
+          return;
+        }
+
+        setLoading(true);
+
+        try {
+          const res = await fetch("/shorten", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              url,
+              customSlug: customSlug || undefined,
+            }),
+          });
+
+          const text = await res.text();
+          if (!text) throw new Error("Server returned empty response");
+
+          let data;
+          try {
+            data = JSON.parse(text);
+          } catch {
+            throw new Error(`Server Error: ${text}`);
+          }
+
+          if (!res.ok || !data.short_url) {
+            throw new Error(data.error || "ไม่สามารถสร้างลิงก์ได้");
+          }
+
+          showResult(data.short_url, data.original_url || url);
+        } catch (err) {
+          console.error(err);
+          showError(err?.message || "ไม่สามารถสร้างลิงก์ได้");
+        } finally {
+          setLoading(false);
+        }
+      });
+
+      const copyToClipboard = async () => {
+        const value = shortLink.textContent;
+        if (!value) return;
+
+        try {
+          await navigator.clipboard.writeText(value);
+          copyBtn.classList.add("border-emerald-500", "text-emerald-200");
+          copyBtn.firstElementChild.textContent = "Copied";
+          setTimeout(() => {
+            copyBtn.classList.remove("border-emerald-500", "text-emerald-200");
+            copyBtn.firstElementChild.textContent = "Copy";
+          }, 1200);
+        } catch (err) {
+          console.error(err);
+          showError("ไม่สามารถคัดลอกได้ กรุณาคัดลอกเอง");
+        }
+      };
+
+      copyBtn.addEventListener("click", copyToClipboard);
+    </script>
+  </body>
+</html>
