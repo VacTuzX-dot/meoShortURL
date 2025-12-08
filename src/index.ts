@@ -25,7 +25,6 @@ db.run(`CREATE TABLE IF NOT EXISTS urls (
     clicks INTEGER DEFAULT 0
 )`);
 
-// Prepared Statements
 const insertUrl = db.prepare(
   "INSERT INTO urls (slug, original_url) VALUES ($slug, $url)"
 );
