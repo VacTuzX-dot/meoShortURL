@@ -4,11 +4,12 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch: # Allows manual trigger
 
 env:
   # ดึงค่าจาก Secrets มาพักไว้
   APP_DIR: ${{ secrets.APP_DIR }}
-  SSH_HOST: ${{ secrets.SSH_HOST }}
+  SSH_HOST: ${{ secrets.HOST_IP }}
   SSH_USER: ${{ secrets.SSH_USER }}
   SSH_PORT: ${{ secrets.SSH_PORT }}
   # ค่า Config ของแอป
@@ -16,17 +17,48 @@ env:
   PORT: ${{ secrets.PORT }}
 
 jobs:
-  deploy:
+  # QA / Continuous Integration Job
+  ci:
+    name: QA - Lint & Build
     runs-on: ubuntu-latest
-    # ลบบรรทัด if ทิ้งไปแล้ว เพื่อแก้ปัญหา Error
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Lint Check
+        run: bun run lint
+
+      - name: Build Test
+        run: bun run build
+
+  # Continuous Deployment Job (Only runs if QA passes)
+  deploy:
+    name: Deploy to Production
+    needs: ci
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v2
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:cicd
+
       - name: Setup SSH Key
         env:
-          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
           mkdir -p ~/.ssh
           echo "$SSH_KEY" > ~/.ssh/id_rsa
@@ -58,9 +90,9 @@ jobs:
             echo "BASE_URL=${BASE_URL}" > .env
             echo "PORT=${PORT}" >> .env
             
-            # 2. สั่ง Build และ Run
+            # 2. สั่ง Build และ Run (port 3006)
             docker compose up -d --build --remove-orphans
             
-            # 3. ลบ Image ขยะ
+            # 3. ลบ Image "Dangling" (ที่ไม่ถูกใช้โดย Container ใดๆ ทั้ง run/stop)
             docker image prune -f
           EOF

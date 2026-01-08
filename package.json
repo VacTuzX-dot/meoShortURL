@@ -5,7 +5,9 @@
   "private": true,
   "scripts": {
     "start": "bun src/index.ts",
-    "dev": "bun run --watch src/index.ts"
+    "dev": "bun run --watch src/index.ts",
+    "lint": "echo 'No linting configured'",
+    "build": "echo 'No build step required'"
   },
   "devDependencies": {
     "@types/bun": "latest"
