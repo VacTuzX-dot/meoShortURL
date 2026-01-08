@@ -6,8 +6,9 @@ services:
     image: meoshorturl:latest
     restart: unless-stopped
     ports:
-      - "${PORT:-3006}:3000"
+      - "${PORT:-3006}:${PORT:-3006}"
     environment:
+      - PORT=${PORT:-3006}
       - NODE_ENV=production
       - DATA_DIR=/app/data
       - DB_PATH=/app/data/urls.sqlite

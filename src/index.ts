@@ -154,7 +154,7 @@ const app = new Elysia()
       return "Internal Error";
     }
   })
-  .listen(3000);
+  .listen(process.env.PORT || 3000);
 
 console.log(
   `🦊 Elysia is running at http://${app.server?.hostname}:${app.server?.port}`
