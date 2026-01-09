@@ -58,12 +58,21 @@ jobs:
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
           tags: tag:cicd
 
+      - name: Debug Tailscale (on failure)
+        if: failure()
+        run: |
+          echo "=== tailscaled.log ==="
+          sudo cat ~/tailscaled.log || true
+          echo "=== tailscale status ==="
+          sudo tailscale status --json || sudo tailscale status || true
+          sudo tailscale version || true
+
       - name: Setup SSH Key
         env:
           SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
           mkdir -p ~/.ssh
-          echo "$SSH_KEY" > ~/.ssh/id_rsa
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           # เพิ่ม Host Key เพื่อไม่ให้ถาม yes/no ตอนเชื่อมต่อ
           ssh-keyscan -p "${SSH_PORT:-22}" "$SSH_HOST" >> ~/.ssh/known_hosts
@@ -100,5 +109,3 @@ jobs:
             # 3. ลบ Image "Dangling" (ที่ไม่ถูกใช้โดย Container ใดๆ ทั้ง run/stop)
             docker image prune -f
           EOF
-
-          
