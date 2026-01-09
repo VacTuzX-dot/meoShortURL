@@ -195,7 +195,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="container">
+    <div className="container-wide">
       <header
         style={{
           display: "flex",
@@ -227,21 +227,14 @@ export default function Dashboard() {
       </header>
 
       <div
-        className="card"
+        className="card table-wrapper"
         style={{
           background: "var(--surface)",
           border: "1px solid var(--border)",
           borderRadius: "var(--radius)",
-          overflow: "hidden",
         }}
       >
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            textAlign: "left",
-          }}
-        >
+        <table>
           <thead>
             <tr>
               <th
