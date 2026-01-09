@@ -4,6 +4,36 @@ import { mkdirSync, existsSync } from "fs";
 import { dirname, join } from "path";
 import { nanoid } from "nanoid";
 
+console.log("--> PRE-INIT: Checking environment variables...");
+console.log(`--> PRE-INIT: PORT=${process.env.PORT}`);
+console.log(`--> PRE-INIT: DISCORD_CLIENT_ID=${process.env.DISCORD_CLIENT_ID ? 'LOADED' : 'MISSING'}`);
+
+if (!process.env.DISCORD_CLIENT_ID) {
+  console.log("--> PRE-INIT: .env variables missing, attempting manual load...");
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const envPath = path.resolve(process.cwd(), '.env');
+    if (fs.existsSync(envPath)) {
+      console.log(`--> PRE-INIT: Found .env at ${envPath}`);
+      const envContent = fs.readFileSync(envPath, 'utf-8');
+      envContent.split('\n').forEach((line: string) => {
+        const match = line.match(/^([^=]+)=(.*)$/);
+        if (match && match[1]) {
+          const key = match[1].trim();
+          const value = (match[2] || "").trim().replace(/^["'](.*)["']$/, '$1');
+          process.env[key] = value;
+          console.log(`--> PRE-INIT: Loaded ${key}`);
+        }
+      });
+    } else {
+      console.log("--> PRE-INIT: .env file NOT found at " + envPath);
+    }
+  } catch (e) {
+    console.error("--> PRE-INIT: Failed to manually load .env", e);
+  }
+}
+
 const dataDir = process.env.DATA_DIR || "data";
 const defaultDbPath = existsSync("/app/data/urls.sqlite")
   ? "urls.sqlite"
@@ -124,12 +154,18 @@ const app = new Elysia()
       // In production, sign this!
       set.headers[
         "Set-Cookie"
-      ] = `admin_session=true; Path=/; HttpOnly; SameSite=Lax; Max-Age=86400`;
+      ] = `admin_session=true; Path=/; HttpOnly; SameSite=Lax; Max-Age=3600`;
 
       return redirect("/dashboard");
     } catch (err: any) {
       return `Auth Failed: ${err.message}`;
     }
+  })
+
+  // AUTH: Logout
+  .get("/auth/logout", ({ set, redirect }) => {
+    set.headers["Set-Cookie"] = `admin_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`;
+    return redirect("/");
   })
 
   // API: Admin Check
