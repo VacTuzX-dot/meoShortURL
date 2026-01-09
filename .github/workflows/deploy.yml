@@ -6,18 +6,6 @@ on:
       - main
   workflow_dispatch: # Allows manual trigger
 
-env:
-  # ดึงค่าจาก Secrets มาพักไว้
-  APP_DIR: ${{ secrets.APP_DIR }}
-  SSH_HOST: ${{ secrets.HOST_IP }}
-  SSH_USER: ${{ secrets.SSH_USER }}
-  SSH_PORT: ${{ secrets.SSH_PORT }}
-  # ค่า Config ของแอป
-  BASE_URL: ${{ secrets.BASE_URL }}
-  PORT: ${{ secrets.PORT }}
-  DISCORD_CLIENT_ID: ${{ secrets.DISCORD_CLIENT_ID }}
-  DISCORD_CLIENT_SECRET: ${{ secrets.DISCORD_CLIENT_SECRET }}
-
 jobs:
   # QA / Continuous Integration Job
   ci:
@@ -46,6 +34,18 @@ jobs:
     name: Deploy to Production
     needs: ci
     runs-on: ubuntu-latest
+
+    env:
+      # ดึงค่าจาก Secrets มาพักไว้
+      APP_DIR: ${{ secrets.APP_DIR }}
+      SSH_HOST: ${{ secrets.HOST_IP }}
+      SSH_USER: ${{ secrets.SSH_USER }}
+      SSH_PORT: ${{ secrets.SSH_PORT }}
+      # ค่า Config ของแอป
+      BASE_URL: ${{ secrets.BASE_URL }}
+      PORT: ${{ secrets.PORT }}
+      DISCORD_CLIENT_ID: ${{ secrets.DISCORD_CLIENT_ID }}
+      DISCORD_CLIENT_SECRET: ${{ secrets.DISCORD_CLIENT_SECRET }}
 
     steps:
       - name: Checkout code
