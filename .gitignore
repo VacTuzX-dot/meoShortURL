@@ -29,6 +29,10 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 .cache
 *.tsbuildinfo
 
+# compiled config files
+vite.config.js
+vite.config.d.ts
+
 # IntelliJ based IDEs
 .idea
 
