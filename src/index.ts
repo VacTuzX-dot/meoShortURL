@@ -207,6 +207,12 @@ const app = new Elysia()
     // Ignore static assets/favicon if not found
     if (slug.includes(".")) return;
 
+    // Reserved paths for SPA routing - serve index.html
+    const reservedPaths = ["dashboard", "login", "logout"];
+    if (reservedPaths.includes(slug)) {
+      return Bun.file(join(DIST_DIR, "index.html"));
+    }
+
     const record = db.query("SELECT * FROM urls WHERE slug = ?").get(slug) as
       | UrlRecord
       | undefined;
