@@ -29,6 +29,31 @@ interface UrlRecord {
   expires_at: string | null;
 }
 
+interface DiscordUser {
+  id: string;
+  username: string;
+  avatar: string | null;
+}
+
+// --- Session Helpers ---
+const SESSION_COOKIE = "meo_session";
+const SESSION_SECRET =
+  process.env.SESSION_SECRET || "meo-default-secret-change-me";
+
+function encodeSession(user: DiscordUser): string {
+  const data = JSON.stringify(user);
+  return Buffer.from(data).toString("base64");
+}
+
+function decodeSession(cookie: string): DiscordUser | null {
+  try {
+    const data = Buffer.from(cookie, "base64").toString("utf-8");
+    return JSON.parse(data) as DiscordUser;
+  } catch {
+    return null;
+  }
+}
+
 // --- Helper Functions ---
 function generateSlug(length = 6): string {
   const chars =
@@ -140,11 +165,28 @@ const app = new Elysia()
         return { success: true };
       })
       // Auth Check Endpoint
-      .get("/me", ({ set }) => {
-        // TODO: check session
-        // For now simulated unauth so frontend shows login button
-        set.status = 401;
-        return { error: "Unauthorized" };
+      .get("/me", ({ request, set }) => {
+        const cookieHeader = request.headers.get("cookie") || "";
+        const cookies = Object.fromEntries(
+          cookieHeader.split("; ").map((c) => {
+            const [key, ...val] = c.split("=");
+            return [key, val.join("=")];
+          })
+        );
+
+        const session = cookies[SESSION_COOKIE];
+        if (!session) {
+          set.status = 401;
+          return { error: "Unauthorized" };
+        }
+
+        const user = decodeSession(session);
+        if (!user) {
+          set.status = 401;
+          return { error: "Invalid session" };
+        }
+
+        return { user };
       })
   )
 
@@ -165,6 +207,8 @@ const app = new Elysia()
       .get("/discord/callback", async ({ query }) => {
         const { code } = query;
         if (!code) return new Response("No code", { status: 400 });
+
+        const baseUrl = process.env.BASE_URL || "https://short.meo.in.th";
 
         // Exchange code for token
         try {
@@ -188,20 +232,57 @@ const app = new Elysia()
             return new Response("Auth Failed", { status: 500 });
           }
 
-          await tokenResponse.json();
-          // TODO: Get User info and set session
+          const tokenData = (await tokenResponse.json()) as {
+            access_token: string;
+          };
 
-          const baseUrl = process.env.BASE_URL || "https://short.meo.in.th";
-          return Response.redirect(`${baseUrl}/dashboard`, 302);
+          // Get user info from Discord
+          const userResponse = await fetch(
+            "https://discord.com/api/users/@me",
+            {
+              headers: { Authorization: `Bearer ${tokenData.access_token}` },
+            }
+          );
+
+          if (!userResponse.ok) {
+            console.error("User fetch failed:", await userResponse.text());
+            return new Response("Failed to get user info", { status: 500 });
+          }
+
+          const userData = (await userResponse.json()) as DiscordUser;
+
+          // Create session cookie
+          const sessionValue = encodeSession({
+            id: userData.id,
+            username: userData.username,
+            avatar: userData.avatar,
+          });
+
+          // Redirect with Set-Cookie header
+          return new Response(null, {
+            status: 302,
+            headers: {
+              Location: `${baseUrl}/dashboard`,
+              "Set-Cookie": `${SESSION_COOKIE}=${sessionValue}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${
+                60 * 60 * 24 * 7
+              }`,
+            },
+          });
         } catch (err) {
           console.error("Auth error:", err);
           return new Response("Auth Failed", { status: 500 });
         }
       })
       .get("/logout", () => {
-        // clear cookie
         const baseUrl = process.env.BASE_URL || "https://short.meo.in.th";
-        return Response.redirect(`${baseUrl}/`, 302);
+        // Clear cookie by setting expired
+        return new Response(null, {
+          status: 302,
+          headers: {
+            Location: `${baseUrl}/`,
+            "Set-Cookie": `${SESSION_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`,
+          },
+        });
       })
   )
 
