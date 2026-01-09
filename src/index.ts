@@ -41,7 +41,9 @@ const PORT = process.env.PORT || 3006;
 const ADMIN_DISCORD_ID = "942687569693528084"; // allowed user
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
-const DISCORD_REDIRECT_URI = `http://localhost:${PORT}/auth/discord/callback`;
+const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
+const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
+const DISCORD_REDIRECT_URI = `${BASE_URL}/auth/discord/callback`;
 
 const app = new Elysia()
   // 1. หน้าบ้าน
@@ -71,6 +73,9 @@ const app = new Elysia()
 
   // AUTH: Login
   .get("/auth/discord", ({ set }) => {
+    console.log("--> AUTH: Starting Discord OAuth flow");
+    console.log("--> AUTH: Redirect URI =", DISCORD_REDIRECT_URI);
+
     if (!DISCORD_CLIENT_ID) return "Missing DISCORD_CLIENT_ID";
     const url = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(
       DISCORD_REDIRECT_URI
@@ -80,6 +85,7 @@ const app = new Elysia()
 
   // AUTH: Callback
   .get("/auth/discord/callback", async ({ query, set, cookie }) => {
+    console.log("--> AUTH: Callback received", query);
     const code = query.code;
     if (!code) return "No code provided";
 
