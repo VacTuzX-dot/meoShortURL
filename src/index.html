@@ -293,6 +293,17 @@
             </div>
           </div>
 
+          <div class="form-group">
+            <label for="expiresInput">Expiration (Optional)</label>
+            <input
+              type="datetime-local"
+              id="expiresInput"
+            />
+            <small style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: 0.25rem;">
+              Leave blank for permanent link
+            </small>
+          </div>
+
           <button type="submit" id="submitBtn">Create secure link</button>
         </form>
 
@@ -312,13 +323,14 @@
         </div>
       </main>
 
-      <footer>&copy; 2024 MEO Studio. No cookies. No ads.</footer>
+      <footer>&copy; 2026 MEO Studio. No cookies. No ads.</footer>
     </div>
 
     <script>
       const form = document.getElementById("shortenForm");
       const urlInput = document.getElementById("urlInput");
       const slugInput = document.getElementById("slugInput");
+      const expiresInput = document.getElementById("expiresInput");
       const slugPrefix = document.getElementById("slugPrefix");
       const resultArea = document.getElementById("resultArea");
       const shortLink = document.getElementById("shortLink");
@@ -372,6 +384,7 @@
         errorMsg.classList.remove("visible");
         const url = urlInput.value.trim();
         const customSlug = slugInput.value.trim();
+        const expiresAt = expiresInput.value; // Get date string
 
         if (!url) return showError("Please enter a URL.");
 
@@ -391,7 +404,11 @@
           const res = await fetch("/shorten", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ url, customSlug: customSlug || undefined }),
+            body: JSON.stringify({ 
+              url, 
+              customSlug: customSlug || undefined,
+              expiresAt: expiresAt || undefined 
+            }),
           });
 
           const data = await res.json();

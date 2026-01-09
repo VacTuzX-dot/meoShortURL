@@ -52,14 +52,23 @@ db.run(`CREATE TABLE IF NOT EXISTS urls (
     slug TEXT UNIQUE, 
     original_url TEXT, 
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP, 
-    clicks INTEGER DEFAULT 0
+    clicks INTEGER DEFAULT 0,
+    expires_at DATETIME
 )`);
 
+// Simple migration check
+try {
+  db.run("ALTER TABLE urls ADD COLUMN expires_at DATETIME");
+  console.log("--> MIGRATION: Added 'expires_at' column to 'urls' table.");
+} catch (e) {
+  // Column likely exists
+}
+
 const insertUrl = db.prepare(
-  "INSERT INTO urls (slug, original_url) VALUES ($slug, $url)"
+  "INSERT INTO urls (slug, original_url, expires_at) VALUES ($slug, $url, $expires_at)"
 );
 const getUrl = db.prepare(
-  "SELECT original_url, clicks FROM urls WHERE slug = $slug"
+  "SELECT original_url, clicks, expires_at FROM urls WHERE slug = $slug"
 );
 const incrementClick = db.prepare(
   "UPDATE urls SET clicks = clicks + 1 WHERE slug = $slug"
@@ -212,15 +221,17 @@ const app = new Elysia()
           short_url: string;
           slug: string;
           original_url: string;
+          expires_at: string | null;
         }
       | { error: string } => {
       console.log("--> Request received at /shorten"); // เช็คว่า request มาถึงไหม
       console.log("--> Body payload:", body);
 
       try {
-        const { url, customSlug } = body as {
+        const { url, customSlug, expiresAt } = body as {
           url?: string;
           customSlug?: string;
+          expiresAt?: string;
         };
 
         if (!url || typeof url !== "string") {
@@ -251,9 +262,14 @@ const app = new Elysia()
         const slug =
           cleanedSlug && cleanedSlug !== "" ? cleanedSlug : nanoid(6);
         console.log("--> Generated Slug:", slug);
+        console.log("--> Expires At:", expiresAt);
 
         // ลอง Insert
-        insertUrl.run({ $slug: slug, $url: normalizedUrl });
+        insertUrl.run({ 
+          $slug: slug, 
+          $url: normalizedUrl, 
+          $expires_at: expiresAt || null 
+        });
         console.log("--> Insert Success!");
 
         // สร้าง Full URL
@@ -273,6 +289,7 @@ const app = new Elysia()
           short_url: shortUrl,
           slug: slug,
           original_url: normalizedUrl,
+          expires_at: expiresAt || null
         };
       } catch (error: any) {
         console.error("!!! ERROR in /shorten !!!", error); // ดู Error ใน Terminal
@@ -299,8 +316,20 @@ const app = new Elysia()
     try {
       const result = getUrl.get({ $slug: slug }) as {
         original_url: string;
+        expires_at?: string | null;
       } | null;
+
       if (result) {
+        // Check Expiration
+        if (result.expires_at) {
+          const expiresEnd = new Date(result.expires_at).getTime();
+          const now = new Date().getTime();
+          if (now > expiresEnd) {
+             set.status = 410;
+             return "This link has expired.";
+          }
+        }
+
         incrementClick.run({ $slug: slug });
         return redirect(result.original_url, 301);
       } else {
