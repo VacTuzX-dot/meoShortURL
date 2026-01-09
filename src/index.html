@@ -6,35 +6,9 @@
     <title>MEO Short URL</title>
     <meta
       name="description"
-      content="ย่อ URL ได้ในคลิกเดียว เลือก custom slug หรือสุ่มอัตโนมัติ ไม่มีโฆษณา พร้อมนับจำนวนคลิกและคัดลอกลิงก์ได้ทันที"
+      content="Simple, fast, and privacy-focused URL shortener."
     />
-    <meta
-      name="keywords"
-      content="URL shortener, short link, custom slug, minimal link studio, redirect, bun"
-    />
-    <meta name="robots" content="index, follow" />
-    <meta name="application-name" content="MEO Short URL" />
-    <meta name="apple-mobile-web-app-title" content="MEO Short URL" />
-    <meta name="theme-color" content="#d8fc70" />
-    <link rel="canonical" href="https://short.meo.in.th/" />
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="MEO Short URL — Minimal link studio" />
-    <meta
-      property="og:description"
-      content="ย่อ URL ได้ในคลิกเดียว ไม่มีโฆษณา ใช้ custom slug หรือสุ่มอัตโนมัติ พร้อมนับยอดคลิก"
-    />
-    <meta property="og:site_name" content="MEO Short URL" />
-    <meta property="og:url" content="https://short.meo.in.th/" />
-    <meta property="og:image" content="https://short.meo.in.th/njz.png" />
-    <meta property="og:image:alt" content="MEO Short URL logo" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="MEO Short URL — Minimal link studio" />
-    <meta
-      name="twitter:description"
-      content="สร้างลิงก์สั้นพร้อมแชร์ทันที รองรับ custom slug และนับยอดคลิก"
-    />
-    <meta name="twitter:image" content="https://short.meo.in.th/njz.png" />
-    <meta name="twitter:url" content="https://short.meo.in.th/" />
+    <meta name="theme-color" content="#111111" />
     <link rel="icon" type="image/x-icon" href="/njz.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -42,370 +16,304 @@
       href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
-    <script src="https://cdn.tailwindcss.com"></script>
     <style>
       :root {
-        color-scheme: dark;
+        --bg: #111111;
+        --surface: #1a1a1a;
+        --border: #333333;
+        --text: #eeeeee;
+        --text-muted: #888888;
         --primary: #d8fc70;
-        --primary-strong: #c2f544;
-        --primary-soft: rgba(216, 252, 112, 0.16);
+        --primary-hover: #c2f544;
+        --primary-text: #000000;
+        --error: #ff6b6b;
+        --radius: 12px;
+        --spacing: 1.5rem;
       }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
       body {
-        font-family: "Space Grotesk", "SF Pro Display", "Soehne", system-ui,
-          -apple-system, sans-serif;
-        background: radial-gradient(circle at 18% 20%, #121212, #060606 48%),
-          radial-gradient(
-            circle at 82% 0%,
-            rgba(216, 252, 112, 0.2),
-            transparent 42%
-          ),
-          radial-gradient(
-            circle at 12% 60%,
-            rgba(216, 252, 112, 0.2),
-            transparent 44%
-          ),
-          linear-gradient(135deg, #080808 0%, #050505 55%, #0a0a0a 100%);
+        font-family: "Space Grotesk", system-ui, -apple-system, sans-serif;
+        background-color: var(--bg);
+        color: var(--text);
+        line-height: 1.6;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        padding: 1rem;
       }
-      .grid-lines {
-        background-image: linear-gradient(
-            to right,
-            rgba(216, 252, 112, 0.18) 1px,
-            transparent 1px
-          ),
-          linear-gradient(
-            to bottom,
-            rgba(216, 252, 112, 0.12) 1px,
-            transparent 1px
-          );
-        background-size: 38px 38px;
-        mask-image: radial-gradient(
-          circle at center,
-          rgba(0, 0, 0, 0.35) 40%,
-          transparent 80%
-        );
-        -webkit-mask-image: radial-gradient(
-          circle at center,
-          rgba(0, 0, 0, 0.35) 40%,
-          transparent 80%
-        );
-        opacity: 0.65;
+
+      .container {
+        max-width: 600px;
+        margin: auto;
+        width: 100%;
       }
-      .fade-in {
-        animation: fadeIn 0.28s ease;
+
+      header {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding-top: 2rem;
       }
+
+      h1 {
+        font-size: 2rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.05em;
+      }
+
+      .subtitle {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+      }
+
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: var(--spacing);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      }
+
+      .form-group {
+        margin-bottom: 1.25rem;
+      }
+
+      label {
+        display: block;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--text-muted);
+        margin-bottom: 0.5rem;
+      }
+
+      input {
+        width: 100%;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 1rem;
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 1rem;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+
+      input:focus {
+        border-color: var(--primary);
+      }
+
+      .input-group {
+        display: flex;
+        align-items: center;
+      }
+
+      .prefix {
+        background: var(--border);
+        color: var(--text-muted);
+        padding: 1rem;
+        border-radius: 8px 0 0 8px;
+        border: 1px solid var(--border);
+        border-right: none;
+        font-size: 0.9rem;
+        user-select: none;
+      }
+
+      .input-group input {
+        border-radius: 0 8px 8px 0;
+      }
+
+      button {
+        width: 100%;
+        background: var(--primary);
+        color: var(--primary-text);
+        border: none;
+        padding: 1rem;
+        font-family: inherit;
+        font-weight: 600;
+        font-size: 1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.2s, transform 0.1s;
+      }
+
+      button:hover {
+        background-color: var(--primary-hover);
+        transform: translateY(-1px);
+      }
+
+      button:active {
+        transform: translateY(1px);
+      }
+
+      button:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+      }
+
+      #resultArea {
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--border);
+        text-align: center;
+        display: none;
+      }
+
+      #resultArea.visible {
+        display: block;
+        animation: fadeIn 0.3s ease;
+      }
+
+      .short-link {
+        font-size: 1.25rem;
+        color: var(--primary);
+        text-decoration: none;
+        word-break: break-all;
+        font-weight: 500;
+        display: block;
+        margin-bottom: 1rem;
+      }
+
+      .short-link:hover {
+        text-decoration: underline;
+      }
+
+      .action-row {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+      }
+
+      .btn-secondary {
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+        width: auto;
+      }
+
+      .btn-secondary:hover {
+        background: var(--border);
+        color: var(--text);
+      }
+
+      .error-msg {
+        color: var(--error);
+        font-size: 0.9rem;
+        margin-top: 1rem;
+        display: none;
+        text-align: center;
+      }
+
+      .error-msg.visible {
+        display: block;
+        animation: shake 0.3s ease;
+      }
+
+      footer {
+        margin-top: auto;
+        padding: 2rem 0;
+        text-align: center;
+        font-size: 0.8rem;
+        color: var(--border);
+      }
+
       @keyframes fadeIn {
         from {
           opacity: 0;
-          transform: translateY(6px);
+          transform: translateY(5px);
         }
         to {
           opacity: 1;
           transform: translateY(0);
         }
       }
-      .float-slow {
-        animation: float 9s ease-in-out infinite alternate;
-      }
-      .float-slower {
-        animation: float 12s ease-in-out infinite alternate;
-      }
-      @keyframes float {
-        from {
-          transform: translateY(0px) translateX(0);
+
+      @keyframes shake {
+        0%,
+        100% {
+          transform: translateX(0);
         }
-        to {
-          transform: translateY(-12px) translateX(8px);
+        25% {
+          transform: translateX(-5px);
+        }
+        75% {
+          transform: translateX(5px);
         }
       }
-      .input-shell {
-        transition: border-color 0.2s ease, box-shadow 0.2s ease,
-          transform 0.15s ease, background-color 0.2s ease;
-      }
-      .input-shell:focus-within {
-        border-color: rgba(216, 252, 112, 0.9);
-        box-shadow: 0 18px 50px -26px rgba(216, 252, 112, 0.5),
-          0 0 0 1px rgba(216, 252, 112, 0.35);
-        transform: translateY(-1px);
-        background-color: rgba(255, 255, 255, 0.06);
-      }
-      @media (prefers-reduced-motion: reduce) {
-        .fade-in,
-        .float-slow,
-        .float-slower {
-          animation: none;
+
+      @media (max-width: 480px) {
+        .card {
+          padding: 1.5rem;
+        }
+        h1 {
+          font-size: 1.75rem;
         }
       }
     </style>
   </head>
-  <body
-    class="text-slate-50 min-h-screen relative antialiased selection:bg-white/10 selection:text-white"
-  >
-    <div class="pointer-events-none absolute inset-0 overflow-hidden">
-      <div
-        class="grid-lines absolute inset-0 opacity-75"
-        aria-hidden="true"
-      ></div>
-      <div
-        class="absolute -left-28 top-10 h-64 w-64 bg-[rgba(216,252,112,0.24)] blur-3xl float-slow"
-        aria-hidden="true"
-      ></div>
-      <div
-        class="absolute right-0 bottom-10 h-72 w-72 bg-[rgba(216,252,112,0.2)] blur-3xl float-slower"
-        aria-hidden="true"
-      ></div>
+  <body>
+    <div class="container">
+      <header>
+        <h1>MEO Short URL</h1>
+        <p class="subtitle">Shorten your links, keep it clear.</p>
+      </header>
+
+      <main class="card">
+        <form id="shortenForm">
+          <div class="form-group">
+            <label for="urlInput">Destination URL</label>
+            <input
+              type="url"
+              id="urlInput"
+              required
+              placeholder="https://example.com/long-url"
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="slugInput">Custom Slug (Optional)</label>
+            <div class="input-group">
+              <span id="slugPrefix" class="prefix">/</span>
+              <input
+                type="text"
+                id="slugInput"
+                placeholder="my-link"
+                autocomplete="off"
+              />
+            </div>
+          </div>
+
+          <button type="submit" id="submitBtn">Create secure link</button>
+        </form>
+
+        <p id="errorMsg" class="error-msg"></p>
+
+        <div id="resultArea">
+          <label>Your short link is ready:</label>
+          <a id="shortLink" href="#" target="_blank" class="short-link"></a>
+          <div class="action-row">
+            <button type="button" id="copyBtn" class="btn-secondary">
+              Copy Link
+            </button>
+            <button type="button" id="resetBtn" class="btn-secondary">
+              New Link
+            </button>
+          </div>
+        </div>
+      </main>
+
+      <footer>&copy; 2024 MEO Studio. No cookies. No ads.</footer>
     </div>
-
-    <header class="relative z-10 px-5 sm:px-8 pt-10 pb-6 max-w-6xl mx-auto">
-      <div class="flex flex-wrap items-center gap-3 justify-between">
-        <div class="flex items-center gap-3">
-          <div
-            class="h-9 w-9 rounded-full border border-white/20 bg-white/10 shadow-sm shadow-white/10 grid place-items-center text-xs font-semibold uppercase tracking-[0.18em] text-white"
-          >
-            M
-          </div>
-          <div>
-            <p class="text-xs uppercase tracking-[0.28em] text-slate-400">
-              MEO Short
-            </p>
-            <h1 class="text-2xl sm:text-3xl font-semibold text-white">
-              Minimal link studio
-            </h1>
-          </div>
-        </div>
-        <div class="flex items-center gap-2 text-xs text-slate-200">
-          <span
-            class="rounded-full border border-[rgba(216,252,112,0.5)] px-3 py-1 bg-[rgba(216,252,112,0.14)] text-white shadow-[0_0_0_1px_rgba(216,252,112,0.2)]"
-          >
-            No login
-          </span>
-          <span
-            class="rounded-full border border-[rgba(216,252,112,0.5)] px-3 py-1 bg-[rgba(216,252,112,0.14)] text-white shadow-[0_0_0_1px_rgba(216,252,112,0.2)]"
-          >
-            HTTPS ready
-          </span>
-        </div>
-      </div>
-    </header>
-
-    <main class="relative z-10 px-5 sm:px-8 pb-12 max-w-6xl mx-auto">
-      <div
-        class="rounded-3xl border border-white/10 bg-black/40 shadow-[0_20px_80px_rgba(0,0,0,0.55)] backdrop-blur"
-      >
-        <div class="grid gap-10 lg:grid-cols-[1.05fr,0.95fr] p-6 sm:p-10">
-          <section class="space-y-8">
-            <div class="space-y-3">
-              <p
-                class="text-xs uppercase tracking-[0.3em] text-[rgba(216,252,112,0.8)]"
-              >
-                Start here
-              </p>
-              <div
-                class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3"
-              >
-                <div class="space-y-2">
-                  <h2
-                    class="text-3xl sm:text-4xl font-semibold leading-tight text-white"
-                  >
-                    Short links, no noise.
-                  </h2>
-                  <p class="text-sm text-slate-300 max-w-xl">
-                    วางURL หรือจะทำเป็นCustom slug ก็ได้
-                    กดครั้งเดียวได้ลิงก์พร้อมแชร์ >;3
-                  </p>
-                </div>
-                <div
-                  class="inline-flex items-center gap-2 text-xs text-slate-200"
-                >
-                  <span
-                    class="h-2 w-2 rounded-full bg-gradient-to-r from-[#d8fc70] to-[#b0e638] shadow-[0_0_0_3px_rgba(255,255,255,0.08)]"
-                  ></span>
-                  <span class="text-white">live redirect</span>
-                </div>
-              </div>
-            </div>
-
-            <form id="shortenForm" class="space-y-6">
-              <div class="space-y-2">
-                <label class="text-xs uppercase tracking-[0.2em] text-slate-300"
-                  >Destination URL</label
-                >
-                <div
-                  class="input-shell rounded-2xl border border-white/15 bg-white/5"
-                >
-                  <input
-                    type="url"
-                    id="urlInput"
-                    required
-                    placeholder="https://example.com/very/long/link"
-                    class="w-full bg-transparent px-4 py-3.5 outline-none text-sm sm:text-base text-slate-50 placeholder:text-slate-500"
-                    autocomplete="off"
-                  />
-                </div>
-                <p class="text-xs text-slate-400">
-                  ใช้ https:// หรือ http:// เพื่อให้ redirect ปลอดภัย
-                </p>
-              </div>
-
-              <div class="space-y-2">
-                <label class="text-xs uppercase tracking-[0.2em] text-slate-300"
-                  >Custom slug (optional)</label
-                >
-                <div
-                  class="input-shell flex items-center rounded-2xl border border-white/15 bg-white/5 overflow-hidden"
-                >
-                  <span
-                    id="slugPrefix"
-                    class="px-4 text-sm sm:text-base text-slate-300 border-r border-white/10 whitespace-nowrap bg-white/5"
-                  ></span>
-                  <input
-                    type="text"
-                    id="slugInput"
-                    placeholder="Input your custom slug here"
-                    class="w-full bg-transparent px-3 sm:px-4 py-3.5 outline-none text-sm sm:text-base text-slate-50 placeholder:text-slate-500"
-                    autocomplete="off"
-                  />
-                </div>
-                <p class="text-xs text-slate-400">
-                  ตัวอักษร a-z 0-9 - _ เท่านั้น (หรือเว้นว่างไว้
-                  เพื่อให้ระบบสุ่ม)
-                </p>
-              </div>
-
-              <button
-                id="submitBtn"
-                type="submit"
-                class="group w-full inline-flex items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-[#d8fc70] via-[#c5f548] to-[#b0e638] text-slate-900 font-semibold py-3.5 shadow-lg shadow-[0_20px_50px_rgba(216,252,112,0.25)] border border-[rgba(216,252,112,0.45)] hover:-translate-y-[1.5px] active:translate-y-[0.5px] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[rgba(216,252,112,0.5)]"
-              >
-                <span
-                  id="loadingIcon"
-                  class="hidden h-4 w-4 rounded-full border-2 border-white/40 border-l-white animate-spin"
-                ></span>
-                <span id="submitText">Create short link</span>
-                <span
-                  class="text-lg leading-none translate-y-[1px] group-hover:translate-x-0.5 transition-transform"
-                  aria-hidden="true"
-                  >→</span
-                >
-              </button>
-            </form>
-
-            <div
-              id="resultArea"
-              class="hidden rounded-2xl border border-[rgba(216,252,112,0.45)] bg-white/5 p-5 sm:p-6 fade-in shadow-[0_10px_40px_-28px_rgba(216,252,112,0.6)]"
-            >
-              <p
-                class="text-xs uppercase tracking-[0.24em] text-[rgba(216,252,112,0.85)] mb-2"
-              >
-                Ready to share
-              </p>
-              <div
-                class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <a
-                  id="shortLink"
-                  href="#"
-                  target="_blank"
-                  rel="noopener"
-                  class="text-lg font-semibold text-white break-all hover:underline underline-offset-4"
-                ></a>
-                <button
-                  id="copyBtn"
-                  type="button"
-                  class="inline-flex items-center gap-2 rounded-xl border border-[rgba(216,252,112,0.4)] bg-white/5 px-3.5 py-2.5 text-sm text-white hover:border-[rgba(216,252,112,0.7)] hover:bg-white/10 transition-colors"
-                >
-                  <span>Copy</span>
-                </button>
-              </div>
-              <p
-                id="destinationPreview"
-                class="text-xs text-slate-400 mt-2"
-              ></p>
-            </div>
-
-            <p id="errorMsg" class="hidden text-rose-300 text-sm"></p>
-          </section>
-
-          <aside
-            class="rounded-2xl border border-white/12 bg-white/5 p-5 sm:p-6 space-y-6 shadow-inner shadow-white/10"
-          >
-            <div class="flex items-center justify-between">
-              <span class="text-sm font-medium text-white">Flow</span>
-              <span
-                class="text-[11px] rounded-full border border-[rgba(216,252,112,0.5)] px-3 py-1 text-white bg-[rgba(216,252,112,0.14)]"
-                >15s setup</span
-              >
-            </div>
-            <ul class="space-y-4 text-sm text-slate-200">
-              <li class="flex items-start gap-3">
-                <span
-                  class="mt-1 h-2 w-2 rounded-full bg-gradient-to-r from-[#d8fc70] to-[#b0e638] shadow-[0_0_0_3px_rgba(255,255,255,0.08)]"
-                ></span>
-                <span>วาง URL ปลายทาง ระบบตรวจ protocol ให้เรียบร้อย</span>
-              </li>
-              <li class="flex items-start gap-3">
-                <span
-                  class="mt-1 h-2 w-2 rounded-full bg-gradient-to-r from-[#d8fc70] to-[#b0e638] shadow-[0_0_0_3px_rgba(255,255,255,0.08)]"
-                ></span>
-                <span>ใส่ slug เองหรือปล่อยให้สุ่มแบบGambling</span>
-              </li>
-              <li class="flex items-start gap-3">
-                <span
-                  class="mt-1 h-2 w-2 rounded-full bg-gradient-to-r from-[#d8fc70] to-[#b0e638] shadow-[0_0_0_3px_rgba(255,255,255,0.08)]"
-                ></span>
-                <span>กดสร้าง คัดลอกลิงก์ แชร์ได้เลย รองรับทุกอุปกรณ์</span>
-              </li>
-            </ul>
-            <div
-              class="rounded-xl border border-white/12 bg-white/5 p-4 space-y-2"
-            >
-              <p class="text-xs uppercase tracking-[0.18em] text-slate-400">
-                Minimal tips
-              </p>
-              <p class="text-sm text-slate-200">
-                ใช้ slug สั้น จำง่าย
-                วางเป็นคิวอาร์หรือส่งข้อความก็อ่านง่ายในธีมขาวดำ.
-              </p>
-            </div>
-            <div class="grid gap-3 sm:grid-cols-3 text-xs text-slate-300">
-              <div
-                class="flex flex-col gap-1 rounded-lg border border-[rgba(216,252,112,0.5)] bg-white/5 p-3 shadow-[0_10px_30px_-28px_rgba(216,252,112,0.8)]"
-              >
-                <span
-                  class="text-[10px] uppercase tracking-[0.18em] text-slate-400"
-                  >Speed</span
-                >
-                <span class="text-base font-semibold text-white">Instant</span>
-                <span class="text-[11px] text-slate-400"
-                  >สร้างลิงก์รวดเดียว</span
-                >
-              </div>
-              <div
-                class="flex flex-col gap-1 rounded-lg border border-[rgba(216,252,112,0.35)] bg-white/5 p-3 shadow-[0_10px_30px_-28px_rgba(216,252,112,0.6)]"
-              >
-                <span
-                  class="text-[10px] uppercase tracking-[0.18em] text-slate-400"
-                  >Privacy</span
-                >
-                <span class="text-base font-semibold text-white">No login</span>
-                <span class="text-[11px] text-slate-400">ไม่มีโฆษณา</span>
-              </div>
-              <div
-                class="flex flex-col gap-1 rounded-lg border border-[rgba(216,252,112,0.25)] bg-white/5 p-3 shadow-[0_10px_30px_-28px_rgba(216,252,112,0.4)]"
-              >
-                <span
-                  class="text-[10px] uppercase tracking-[0.18em] text-slate-400"
-                  >Clicks</span
-                >
-                <span class="text-base font-semibold text-white">Tracked</span>
-                <span class="text-[11px] text-slate-400"
-                  >นับยอดฝั่งเซิร์ฟเวอร์</span
-                >
-              </div>
-            </div>
-          </aside>
-        </div>
-      </div>
-    </main>
 
     <script>
       const form = document.getElementById("shortenForm");
@@ -414,65 +322,67 @@
       const slugPrefix = document.getElementById("slugPrefix");
       const resultArea = document.getElementById("resultArea");
       const shortLink = document.getElementById("shortLink");
-      const destinationPreview = document.getElementById("destinationPreview");
       const errorMsg = document.getElementById("errorMsg");
       const copyBtn = document.getElementById("copyBtn");
       const submitBtn = document.getElementById("submitBtn");
-      const submitText = document.getElementById("submitText");
-      const loadingIcon = document.getElementById("loadingIcon");
+      const resetBtn = document.getElementById("resetBtn");
 
+      // Set prefix
       const originHost = window.location.origin.replace(/\/$/, "");
-      slugPrefix.textContent = originHost + "/";
+      const originDisplay = window.location.host;
+      slugPrefix.textContent = originDisplay + "/";
 
-      const setLoading = (isLoading) => {
-        submitBtn.disabled = isLoading;
-        submitBtn.classList.toggle("opacity-80", isLoading);
-        loadingIcon.classList.toggle("hidden", !isLoading);
-        submitText.textContent = isLoading ? "Working..." : "Create short link";
+      // State
+      let isLoading = false;
+
+      const setLoading = (loading) => {
+        isLoading = loading;
+        submitBtn.disabled = loading;
+        submitBtn.textContent = loading
+          ? "Shortening..."
+          : "Create secure link";
       };
 
-      const showError = (message) => {
-        errorMsg.textContent = message;
-        errorMsg.classList.remove("hidden");
-        resultArea.classList.add("hidden");
+      const showError = (msg) => {
+        errorMsg.textContent = msg;
+        errorMsg.classList.add("visible");
+        // Auto hide after 5s
+        setTimeout(() => errorMsg.classList.remove("visible"), 5000);
       };
 
-      const clearFeedback = () => {
-        errorMsg.classList.add("hidden");
-        errorMsg.textContent = "";
-        resultArea.classList.add("hidden");
+      const showResult = (url) => {
+        shortLink.href = url;
+        shortLink.textContent = url;
+        resultArea.classList.add("visible");
+        form.style.display = "none";
       };
 
-      const showResult = (shortUrl, originalUrl) => {
-        shortLink.href = shortUrl;
-        shortLink.textContent = shortUrl;
-        destinationPreview.textContent = `Forwarding to ${originalUrl}`;
-        resultArea.classList.remove("hidden");
-        resultArea.classList.add("fade-in");
+      const resetForm = () => {
+        form.reset();
+        form.style.display = "block";
+        resultArea.classList.remove("visible");
+        errorMsg.classList.remove("visible");
       };
 
+      // Handle Submit
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
-        clearFeedback();
+        if (isLoading) return;
 
+        errorMsg.classList.remove("visible");
         const url = urlInput.value.trim();
         const customSlug = slugInput.value.trim();
 
-        if (!url) {
-          showError("กรุณาใส่ URL ที่ต้องการย่อ");
-          return;
-        }
+        if (!url) return showError("Please enter a URL.");
 
         try {
           new URL(url);
         } catch {
-          showError("URL ไม่ถูกต้อง (ต้องขึ้นต้นด้วย http หรือ https)");
-          return;
+          return showError("Invalid URL format. Include http:// or https://");
         }
 
         if (customSlug && !/^[a-zA-Z0-9-_]{2,50}$/.test(customSlug)) {
-          showError("Slug ใช้ได้เฉพาะ a-z, 0-9, -, _ (2-50 ตัว)");
-          return;
+          return showError("Slug allowed: a-z, 0-9, - and _ (2-50 chars)");
         }
 
         setLoading(true);
@@ -481,62 +391,37 @@
           const res = await fetch("/shorten", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              url,
-              customSlug: customSlug || undefined,
-            }),
+            body: JSON.stringify({ url, customSlug: customSlug || undefined }),
           });
 
-          const text = await res.text();
-          if (!text) throw new Error("Server returned empty response");
+          const data = await res.json();
 
-          let data;
-          try {
-            data = JSON.parse(text);
-          } catch {
-            throw new Error(`Server Error: ${text}`);
+          if (!res.ok) {
+            throw new Error(data.error || "Failed to create link");
           }
 
-          if (!res.ok || !data.short_url) {
-            throw new Error(data.error || "ไม่สามารถสร้างลิงก์ได้");
-          }
-
-          showResult(data.short_url, data.original_url || url);
+          showResult(data.short_url);
         } catch (err) {
-          console.error(err);
-          showError(err?.message || "ไม่สามารถสร้างลิงก์ได้");
+          showError(err.message);
         } finally {
           setLoading(false);
         }
       });
 
-      const copyToClipboard = async () => {
-        const value = shortLink.textContent;
-        if (!value) return;
-
+      // Handle Copy
+      copyBtn.addEventListener("click", async () => {
         try {
-          await navigator.clipboard.writeText(value);
-          copyBtn.classList.add(
-            "border-[rgba(216,252,112,0.8)]",
-            "text-white",
-            "bg-[rgba(216,252,112,0.2)]"
-          );
-          copyBtn.firstElementChild.textContent = "Copied";
-          setTimeout(() => {
-            copyBtn.classList.remove(
-              "border-[rgba(216,252,112,0.8)]",
-              "text-white",
-              "bg-[rgba(216,252,112,0.2)]"
-            );
-            copyBtn.firstElementChild.textContent = "Copy";
-          }, 1200);
+          await navigator.clipboard.writeText(shortLink.textContent);
+          const originalText = copyBtn.textContent;
+          copyBtn.textContent = "Copied!";
+          setTimeout(() => (copyBtn.textContent = originalText), 1500);
         } catch (err) {
-          console.error(err);
-          showError("ไม่สามารถคัดลอกได้ กรุณาคัดลอกเอง");
+          showError("Could not copy to clipboard");
         }
-      };
+      });
 
-      copyBtn.addEventListener("click", copyToClipboard);
+      // Handle Reset
+      resetBtn.addEventListener("click", resetForm);
     </script>
   </body>
 </html>

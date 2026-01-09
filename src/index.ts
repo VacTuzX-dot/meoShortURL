@@ -34,12 +34,109 @@ const getUrl = db.prepare(
 const incrementClick = db.prepare(
   "UPDATE urls SET clicks = clicks + 1 WHERE slug = $slug"
 );
+const getAllUrls = db.prepare("SELECT * FROM urls ORDER BY created_at DESC");
+const deleteUrl = db.prepare("DELETE FROM urls WHERE id = $id");
+
+const PORT = process.env.PORT || 3006;
+const ADMIN_DISCORD_ID = "942687569693528084"; // allowed user
+const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
+const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
+const DISCORD_REDIRECT_URI = `http://localhost:${PORT}/auth/discord/callback`;
 
 const app = new Elysia()
   // 1. หน้าบ้าน
   .get("/", () => Bun.file("src/index.html"))
+  .get("/dashboard", () => Bun.file("src/dashboard.html"))
   .get("/njz.png", () => Bun.file("njz.png"))
   .get("/favicon.ico", () => Bun.file("njz.png"))
+
+  // AUTH: Login
+  .get("/auth/discord", ({ set }) => {
+    if (!DISCORD_CLIENT_ID) return "Missing DISCORD_CLIENT_ID";
+    const url = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(
+      DISCORD_REDIRECT_URI
+    )}&response_type=code&scope=identify`;
+    set.redirect = url;
+  })
+
+  // AUTH: Callback
+  .get("/auth/discord/callback", async ({ query, set, cookie }) => {
+    const code = query.code;
+    if (!code) return "No code provided";
+
+    try {
+      // Exchange code for token
+      const tokenResponse = await fetch(
+        "https://discord.com/api/oauth2/token",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            client_id: DISCORD_CLIENT_ID!,
+            client_secret: DISCORD_CLIENT_SECRET!,
+            grant_type: "authorization_code",
+            code: code as string,
+            redirect_uri: DISCORD_REDIRECT_URI,
+          }),
+        }
+      );
+
+      const tokenData = (await tokenResponse.json()) as any;
+      if (tokenData.error) return `Discord Error: ${JSON.stringify(tokenData)}`;
+
+      // Get User Info
+      const userResponse = await fetch("https://discord.com/api/users/@me", {
+        headers: { Authorization: `Bearer ${tokenData.access_token}` },
+      });
+      const userData = (await userResponse.json()) as any;
+
+      if (userData.id !== ADMIN_DISCORD_ID) {
+        set.status = 403;
+        return "Access Forbidden: You are not the owner.";
+      }
+
+      // Set Secure Cookie (Basic implementation)
+      // In production, sign this!
+      set.headers[
+        "Set-Cookie"
+      ] = `admin_session=true; Path=/; HttpOnly; SameSite=Lax; Max-Age=86400`;
+
+      set.redirect = "/dashboard";
+    } catch (err: any) {
+      return `Auth Failed: ${err.message}`;
+    }
+  })
+
+  // API: Admin Check
+  .get("/api/admin/me", ({ request, set }) => {
+    const cookie = request.headers.get("cookie") || "";
+    if (!cookie.includes("admin_session=true")) {
+      set.status = 401;
+      return { error: "Unauthorized" };
+    }
+    return { user: "Admin", id: ADMIN_DISCORD_ID };
+  })
+
+  // API: List URLs
+  .get("/api/admin/urls", ({ request, set }) => {
+    const cookie = request.headers.get("cookie") || "";
+    if (!cookie.includes("admin_session=true")) {
+      set.status = 401;
+      return { error: "Unauthorized" };
+    }
+    return getAllUrls.all();
+  })
+
+  // API: Delete URL
+  .delete("/api/admin/urls/:id", ({ request, set, params }) => {
+    const cookie = request.headers.get("cookie") || "";
+    if (!cookie.includes("admin_session=true")) {
+      set.status = 401;
+      return { error: "Unauthorized" };
+    }
+    deleteUrl.run({ $id: params.id });
+    return { success: true };
+  })
 
   // 2. API สร้าง Link (Debug Version)
   .post(
@@ -103,7 +200,7 @@ const app = new Elysia()
           app.server?.hostname === "0.0.0.0" || !app.server?.hostname
             ? "localhost"
             : app.server.hostname;
-        const serverPort = app.server?.port || 3000;
+        const serverPort = app.server?.port || PORT;
         const origin =
           request.headers.get("origin")?.replace(/\/$/, "") ||
           process.env.BASE_URL?.replace(/\/$/, "") ||
@@ -154,7 +251,7 @@ const app = new Elysia()
       return "Internal Error";
     }
   })
-  .listen(process.env.PORT || 3000);
+  .listen(PORT);
 
 console.log(
   `🦊 Elysia is running at http://${app.server?.hostname}:${app.server?.port}`
