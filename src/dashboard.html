@@ -260,10 +260,8 @@
         }
       };
 
-      logoutBtn.onclick = async () => {
-        // Simple client-side clear, server should strictly handle auth
-        document.cookie = "admin_session=; Max-Age=0; path=/";
-        window.location.reload();
+      logoutBtn.onclick = () => {
+        window.location.href = "/auth/logout";
       };
 
       checkAuth();
