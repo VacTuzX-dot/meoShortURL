@@ -162,15 +162,11 @@ const app = new Elysia()
         )}&response_type=code&scope=identify`;
         return Response.redirect(url, 302);
       })
-      .get("/discord/callback", async ({ query, set }) => {
+      .get("/discord/callback", async ({ query }) => {
         const { code } = query;
-        if (!code) return "No code";
+        if (!code) return new Response("No code", { status: 400 });
 
-        // Exchange code
-        // This part needs fetch to Discord
-        // For now, let's just simulate succesful login for dev or finish implementation
-
-        // Real implementation:
+        // Exchange code for token
         try {
           const tokenResponse = await fetch(
             "https://discord.com/api/oauth2/token",
@@ -186,17 +182,26 @@ const app = new Elysia()
               }),
             }
           );
+
+          if (!tokenResponse.ok) {
+            console.error("Token exchange failed:", await tokenResponse.text());
+            return new Response("Auth Failed", { status: 500 });
+          }
+
           await tokenResponse.json();
           // TODO: Get User info and set session
 
-          set.redirect = "/dashboard";
-        } catch {
-          return "Auth Failed";
+          const baseUrl = process.env.BASE_URL || "https://short.meo.in.th";
+          return Response.redirect(`${baseUrl}/dashboard`, 302);
+        } catch (err) {
+          console.error("Auth error:", err);
+          return new Response("Auth Failed", { status: 500 });
         }
       })
-      .get("/logout", ({ set }) => {
+      .get("/logout", () => {
         // clear cookie
-        set.redirect = "/";
+        const baseUrl = process.env.BASE_URL || "https://short.meo.in.th";
+        return Response.redirect(`${baseUrl}/`, 302);
       })
   )
 
