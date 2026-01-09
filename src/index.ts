@@ -72,7 +72,7 @@ const app = new Elysia()
   })
 
   // AUTH: Login
-  .get("/auth/discord", ({ set }) => {
+  .get("/auth/discord", ({ set, redirect }) => {
     console.log("--> AUTH: Starting Discord OAuth flow");
     console.log("--> AUTH: Redirect URI =", DISCORD_REDIRECT_URI);
 
@@ -80,11 +80,11 @@ const app = new Elysia()
     const url = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(
       DISCORD_REDIRECT_URI
     )}&response_type=code&scope=identify`;
-    set.redirect = url;
+    return redirect(url);
   })
 
   // AUTH: Callback
-  .get("/auth/discord/callback", async ({ query, set, cookie }) => {
+  .get("/auth/discord/callback", async ({ query, set, cookie, redirect }) => {
     console.log("--> AUTH: Callback received", query);
     const code = query.code;
     if (!code) return "No code provided";
@@ -126,7 +126,7 @@ const app = new Elysia()
         "Set-Cookie"
       ] = `admin_session=true; Path=/; HttpOnly; SameSite=Lax; Max-Age=86400`;
 
-      set.redirect = "/dashboard";
+      return redirect("/dashboard");
     } catch (err: any) {
       return `Auth Failed: ${err.message}`;
     }
