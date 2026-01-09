@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { X, ExternalLink, Trash2 } from 'lucide-react';
+import { X, ExternalLink, Trash2, Save, Settings2 } from 'lucide-react';
 
 interface UrlData {
   id: number;
@@ -16,6 +16,13 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [urls, setUrls] = useState<UrlData[]>([]);
   const [selectedUrl, setSelectedUrl] = useState<UrlData | null>(null);
+  
+  // Expiration editing state
+  const [isEditingExpiration, setIsEditingExpiration] = useState(false);
+  const [expirationType, setExpirationType] = useState<'permanent' | 'duration'>('permanent');
+  const [durationValue, setDurationValue] = useState(30);
+  const [durationUnit, setDurationUnit] = useState('minutes');
+  const [isSavingExpiration, setIsSavingExpiration] = useState(false);
 
   useEffect(() => {
     const fetchUrls = async () => {
@@ -63,6 +70,75 @@ export default function Dashboard() {
     } catch (err) {
       alert('Failed to delete');
     }
+  };
+
+  const getExpiresAt = () => {
+    if (expirationType === 'permanent') return null;
+    const now = new Date();
+    if (durationUnit === 'minutes') now.setMinutes(now.getMinutes() + durationValue);
+    if (durationUnit === 'hours') now.setHours(now.getHours() + durationValue);
+    if (durationUnit === 'days') now.setDate(now.getDate() + durationValue);
+    return now.toISOString();
+  };
+
+  const handleSaveExpiration = async () => {
+    if (!selectedUrl) return;
+    setIsSavingExpiration(true);
+    try {
+      const newExpiresAt = getExpiresAt();
+      const res = await fetch(`/api/admin/urls/${selectedUrl.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ expires_at: newExpiresAt })
+      });
+      if (res.ok) {
+        // Update local state
+        setUrls((prev) => prev.map(u => 
+          u.id === selectedUrl.id ? { ...u, expires_at: newExpiresAt } : u
+        ));
+        setSelectedUrl({ ...selectedUrl, expires_at: newExpiresAt });
+        setIsEditingExpiration(false);
+      } else {
+        throw new Error('Failed to save');
+      }
+    } catch (err) {
+      alert('Failed to update expiration');
+    } finally {
+      setIsSavingExpiration(false);
+    }
+  };
+
+  const openExpirationEditor = () => {
+    if (selectedUrl?.expires_at) {
+      setExpirationType('duration');
+      // Calculate remaining time for display
+      const expiresDate = new Date(selectedUrl.expires_at);
+      const now = new Date();
+      const diffMs = expiresDate.getTime() - now.getTime();
+      if (diffMs > 0) {
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+        const diffMinutes = Math.floor(diffMs / (1000 * 60));
+        if (diffDays > 0) {
+          setDurationValue(diffDays);
+          setDurationUnit('days');
+        } else if (diffHours > 0) {
+          setDurationValue(diffHours);
+          setDurationUnit('hours');
+        } else {
+          setDurationValue(Math.max(1, diffMinutes));
+          setDurationUnit('minutes');
+        }
+      } else {
+        setDurationValue(30);
+        setDurationUnit('minutes');
+      }
+    } else {
+      setExpirationType('permanent');
+      setDurationValue(30);
+      setDurationUnit('minutes');
+    }
+    setIsEditingExpiration(true);
   };
 
   if (loading) {
@@ -190,10 +266,86 @@ export default function Dashboard() {
                             </div>
                             
                              <div style={{ marginBottom: '1.25rem' }}>
-                              <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: '0.5rem' }}>Expires At</label>
-                              <div style={{ background: 'rgba(0,0,0,0.2)', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '0.9rem', color: selectedUrl.expires_at ? 'var(--text)' : 'var(--text-muted)' }}>
-                                {selectedUrl.expires_at ? new Date(selectedUrl.expires_at).toLocaleString() : 'Never'}
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                                <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Expires At</label>
+                                {!isEditingExpiration && (
+                                  <button 
+                                    onClick={openExpirationEditor}
+                                    style={{ background: 'transparent', padding: '0.25rem 0.5rem', width: 'auto', fontSize: '0.75rem', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                                  >
+                                    <Settings2 size={14} /> Edit
+                                  </button>
+                                )}
                               </div>
+                              
+                              {!isEditingExpiration ? (
+                                <div style={{ background: 'rgba(0,0,0,0.2)', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '0.9rem', color: selectedUrl.expires_at ? 'var(--text)' : 'var(--text-muted)' }}>
+                                  {selectedUrl.expires_at ? new Date(selectedUrl.expires_at).toLocaleString() : 'Never (Permanent)'}
+                                </div>
+                              ) : (
+                                <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--primary)' }}>
+                                  {/* Duration Type Selector */}
+                                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '1rem' }}>
+                                    <button
+                                      type="button"
+                                      className={expirationType === 'permanent' ? '' : 'btn-secondary'}
+                                      style={expirationType === 'permanent' ? { borderColor: 'var(--primary)', padding: '0.5rem' } : { padding: '0.5rem' }}
+                                      onClick={() => setExpirationType('permanent')}
+                                    >
+                                      Permanent
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className={expirationType === 'duration' ? '' : 'btn-secondary'}
+                                      style={expirationType === 'duration' ? { borderColor: 'var(--primary)', padding: '0.5rem' } : { padding: '0.5rem' }}
+                                      onClick={() => setExpirationType('duration')}
+                                    >
+                                      Temporary
+                                    </button>
+                                  </div>
+                                  
+                                  {/* Duration Input */}
+                                  {expirationType === 'duration' && (
+                                    <div style={{ display: 'flex', marginBottom: '1rem' }}>
+                                      <input 
+                                        type="number" 
+                                        min="1" 
+                                        max="365"
+                                        value={durationValue}
+                                        onChange={(e) => setDurationValue(Number(e.target.value))}
+                                        style={{ borderRadius: '8px 0 0 8px', flex: 1 }}
+                                      />
+                                      <select 
+                                        value={durationUnit} 
+                                        onChange={(e) => setDurationUnit(e.target.value)}
+                                        style={{ borderRadius: '0 8px 8px 0', borderLeft: 'none', width: 'auto', minWidth: '100px', cursor: 'pointer' }}
+                                      >
+                                        <option value="minutes">Minutes</option>
+                                        <option value="hours">Hours</option>
+                                        <option value="days">Days</option>
+                                      </select>
+                                    </div>
+                                  )}
+                                  
+                                  {/* Action Buttons */}
+                                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                    <button 
+                                      onClick={handleSaveExpiration}
+                                      disabled={isSavingExpiration}
+                                      style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', padding: '0.5rem' }}
+                                    >
+                                      <Save size={16} /> {isSavingExpiration ? 'Saving...' : 'Save'}
+                                    </button>
+                                    <button 
+                                      onClick={() => setIsEditingExpiration(false)}
+                                      className="btn-secondary"
+                                      style={{ flex: 1, padding: '0.5rem' }}
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
                             </div>
 
                             <div style={{ marginTop: '2rem' }}>
