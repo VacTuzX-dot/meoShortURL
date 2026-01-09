@@ -41,7 +41,7 @@ const PORT = process.env.PORT || 3006;
 const ADMIN_DISCORD_ID = "942687569693528084"; // allowed user
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
-const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
+
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 const DISCORD_REDIRECT_URI = `${BASE_URL}/auth/discord/callback`;
 
