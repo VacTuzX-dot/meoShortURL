@@ -46,6 +46,7 @@ jobs:
       PORT: ${{ secrets.PORT }}
       DISCORD_CLIENT_ID: ${{ secrets.DISCORD_CLIENT_ID }}
       DISCORD_CLIENT_SECRET: ${{ secrets.DISCORD_CLIENT_SECRET }}
+      DISCORD_REDIRECT_URI: ${{ secrets.DISCORD_REDIRECT_URI }}
 
     steps:
       - name: Checkout code
@@ -73,7 +74,7 @@ jobs:
         run: |
           # Create .ssh directory
           mkdir -p ~/.ssh
-          
+
           # Check for Secrets
           if [ -z "$SSH_KEY" ]; then
             echo "Error: SSH_PRIVATE_KEY secret is missing or empty."
@@ -91,7 +92,7 @@ jobs:
           # Trim Host and Scan Keys
           CLEAN_HOST=$(echo "$SSH_HOST" | xargs)
           CLEAN_PORT=$(echo "${SSH_PORT:-22}" | xargs)
-          
+
           echo "Scanning host: $CLEAN_HOST on port $CLEAN_PORT"
           ssh-keyscan -p "$CLEAN_PORT" "$CLEAN_HOST" >> ~/.ssh/known_hosts 2>/dev/null || echo "Warning: ssh-keyscan failed"
 
@@ -125,6 +126,7 @@ jobs:
             echo "PORT=${PORT}" >> .env
             echo "DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID}" >> .env
             echo "DISCORD_CLIENT_SECRET=${DISCORD_CLIENT_SECRET}" >> .env
+            echo "DISCORD_REDIRECT_URI=${DISCORD_REDIRECT_URI}" >> .env
             
             # 2. สั่ง Build และ Run (port 3006)
             docker compose up -d --build --remove-orphans
