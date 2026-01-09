@@ -15,6 +15,8 @@ env:
   # ค่า Config ของแอป
   BASE_URL: ${{ secrets.BASE_URL }}
   PORT: ${{ secrets.PORT }}
+  DISCORD_CLIENT_ID: ${{ secrets.DISCORD_CLIENT_ID }}
+  DISCORD_CLIENT_SECRET: ${{ secrets.DISCORD_CLIENT_SECRET }}
 
 jobs:
   # QA / Continuous Integration Job
@@ -89,6 +91,8 @@ jobs:
             # 1. สร้างไฟล์ .env บน Server
             echo "BASE_URL=${BASE_URL}" > .env
             echo "PORT=${PORT}" >> .env
+            echo "DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID}" >> .env
+            echo "DISCORD_CLIENT_SECRET=${DISCORD_CLIENT_SECRET}" >> .env
             
             # 2. สั่ง Build และ Run (port 3006)
             docker compose up -d --build --remove-orphans
@@ -96,5 +100,3 @@ jobs:
             # 3. ลบ Image "Dangling" (ที่ไม่ถูกใช้โดย Container ใดๆ ทั้ง run/stop)
             docker image prune -f
           EOF
-
-          

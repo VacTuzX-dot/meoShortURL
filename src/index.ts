@@ -45,10 +45,29 @@ const DISCORD_REDIRECT_URI = `http://localhost:${PORT}/auth/discord/callback`;
 
 const app = new Elysia()
   // 1. หน้าบ้าน
-  .get("/", () => Bun.file("src/index.html"))
-  .get("/dashboard", () => Bun.file("src/dashboard.html"))
-  .get("/njz.png", () => Bun.file("njz.png"))
-  .get("/favicon.ico", () => Bun.file("njz.png"))
+  .get("/", () => {
+    const filePath = join(import.meta.dir, "index.html");
+    console.log("Serving / from:", filePath, "Exists:", existsSync(filePath));
+    return Bun.file(filePath);
+  })
+  .get("/dashboard", () => {
+    const filePath = join(import.meta.dir, "dashboard.html");
+    console.log(
+      "Serving /dashboard from:",
+      filePath,
+      "Exists:",
+      existsSync(filePath)
+    );
+    return Bun.file(filePath);
+  })
+  .get("/njz.png", () => {
+    const filePath = join(process.cwd(), "njz.png"); // njz.png อยู่ root
+    return Bun.file(filePath);
+  })
+  .get("/favicon.ico", () => {
+    const filePath = join(process.cwd(), "njz.png");
+    return Bun.file(filePath);
+  })
 
   // AUTH: Login
   .get("/auth/discord", ({ set }) => {

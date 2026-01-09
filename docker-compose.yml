@@ -13,6 +13,8 @@ services:
       - DATA_DIR=/app/data
       - DB_PATH=/app/data/urls.sqlite
       - BASE_URL=${BASE_URL}
+      - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID}
+      - DISCORD_CLIENT_SECRET=${DISCORD_CLIENT_SECRET}
     volumes:
       - data:/app/data
     command: ["bun", "src/index.ts"]
