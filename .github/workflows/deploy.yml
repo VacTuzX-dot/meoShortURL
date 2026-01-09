@@ -96,3 +96,5 @@ jobs:
             # 3. ลบ Image "Dangling" (ที่ไม่ถูกใช้โดย Container ใดๆ ทั้ง run/stop)
             docker image prune -f
           EOF
+
+          
