@@ -151,16 +151,16 @@ const app = new Elysia()
   // Auth Routes
   .group("/auth", (app) =>
     app
-      .get("/discord", ({ set }) => {
+      .get("/discord", () => {
         const clientId = process.env.DISCORD_CLIENT_ID;
         const redirectUri = process.env.DISCORD_REDIRECT_URI;
         if (!clientId || !redirectUri) {
-          return "Discord Env Missing";
+          return new Response("Discord Env Missing", { status: 500 });
         }
         const url = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(
           redirectUri
         )}&response_type=code&scope=identify`;
-        set.redirect = url;
+        return Response.redirect(url, 302);
       })
       .get("/discord/callback", async ({ query, set }) => {
         const { code } = query;
