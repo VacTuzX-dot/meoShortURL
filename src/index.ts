@@ -90,6 +90,8 @@ const DIST_DIR = join(import.meta.dir, "..", "dist");
 // --- App Setup ---
 const app = new Elysia()
   .use(cors())
+  // Serve robots.txt for SEO
+  .get("/robots.txt", () => Bun.file(join(DIST_DIR, "robots.txt")))
   // Serve static assets from dist/assets
   .get("/assets/*", ({ params }) => {
     const filePath = join(DIST_DIR, "assets", params["*"]);
