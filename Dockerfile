@@ -1,32 +1,37 @@
-FROM oven/bun:latest as base
+# Build Rust backend
+FROM rust:1.83-bookworm AS rust-builder
 WORKDIR /app
-
-# Install all dependencies (including dev for build)
-COPY package.json bun.lock ./
-RUN bun install
-
-# Copy source
-COPY src src
-COPY index.html ./
-COPY vite.config.ts ./
-COPY tsconfig.json ./
-COPY tsconfig.node.json ./
-COPY njz.png ./njz.png
+# Copy Rust source
+COPY rust-backend/Cargo.toml rust-backend/Cargo.lock* ./
+COPY rust-backend/src ./src
+# Build release binary
+RUN cargo build --release
 
 # Build Frontend
-RUN bun run build
+FROM node:20-alpine AS frontend-builder
+WORKDIR /app
+COPY package.json bun.lock ./
+RUN npm install
+COPY src ./src
+COPY index.html vite.config.ts tsconfig*.json ./
+COPY njz.png ./
+RUN npm run build
 
-# Remove dev dependencies after build
-RUN bun install --production
+# Runtime image
+FROM debian:bookworm-slim AS runtime
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
 
-# Setup Volume
+# Copy binary and frontend
+COPY --from=rust-builder /app/target/release/meoshorturl ./server
+COPY --from=frontend-builder /app/dist ./dist
+
+# Setup volume for data
 VOLUME /app/data
 
-ENV NODE_ENV=production
-ENV DATA_DIR=/app/data
 ENV DB_PATH=/app/data/urls.sqlite
 ENV PORT=3006
 
 EXPOSE 3006
 
-CMD ["bun", "src/index.ts"]
+CMD ["./server"]

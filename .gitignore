@@ -8,6 +8,10 @@ dist
 data/
 urls.sqlite
 
+# Rust build artifacts
+rust-backend/target/
+Cargo.lock
+
 # code coverage
 coverage
 *.lcov

@@ -9,7 +9,6 @@ services:
       - "${PORT:-3006}:${PORT:-3006}"
     environment:
       - PORT=${PORT:-3006}
-      - NODE_ENV=production
       - DATA_DIR=/app/data
       - DB_PATH=/app/data/urls.sqlite
       - BASE_URL=${BASE_URL}
@@ -18,7 +17,6 @@ services:
       - DISCORD_REDIRECT_URI=${DISCORD_REDIRECT_URI}
     volumes:
       - data:/app/data
-    command: ["bun", "src/index.ts"]
 
 volumes:
   data:

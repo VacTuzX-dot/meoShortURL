@@ -9,25 +9,34 @@ on:
 jobs:
   # QA / Continuous Integration Job
   ci:
-    name: QA - Lint & Build
+    name: QA - Build & Test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@v2
         with:
-          bun-version: latest
+          workspaces: rust-backend
 
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
+      - name: Build Rust Backend
+        working-directory: rust-backend
+        run: cargo build --release
 
-      - name: Lint Check
-        run: bun run lint
+      - name: Setup Node for Frontend
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
 
-      - name: Build Test
-        run: bun run build
+      - name: Install Frontend Dependencies
+        run: npm install
+
+      - name: Build Frontend
+        run: npm run build
 
   # Continuous Deployment Job (Only runs if QA passes)
   deploy:
@@ -132,6 +141,7 @@ jobs:
             --exclude='.github' \
             --exclude='*.sqlite' \
             --exclude='.env' \
+            --exclude='target' \
             . | ssh -p "${SSH_PORT:-22}" "$SSH_USER@$SSH_HOST" "tar -xzf - -C '$APP_DIR'"
 
       - name: Deploy with Docker Compose
