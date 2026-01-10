@@ -1,0 +1,21 @@
+# MEO Short URL - robots.txt
+User-agent: *
+Allow: /
+
+# Disallow admin/dashboard pages from indexing
+Disallow: /dashboard
+Disallow: /auth/
+
+# Allow search engines but disallow AI training
+# Note: This is a de facto standard, may not be respected by all crawlers
+User-agent: GPTBot
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+# Sitemap (optional)
+# Sitemap: https://short.meo.in.th/sitemap.xml
