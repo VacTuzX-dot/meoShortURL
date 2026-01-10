@@ -19,6 +19,26 @@ db.run(`
   )
 `);
 
+// Create index for faster slug lookups
+db.run(`CREATE INDEX IF NOT EXISTS idx_urls_slug ON urls(slug)`);
+
+// Prepared statements for better performance
+const stmtGetBySlug = db.prepare("SELECT * FROM urls WHERE slug = ?");
+const stmtCheckSlug = db.prepare("SELECT id FROM urls WHERE slug = ?");
+const stmtInsertUrl = db.prepare(
+  "INSERT INTO urls (slug, original_url, expires_at) VALUES (?, ?, ?)"
+);
+const stmtIncrementClick = db.prepare(
+  "UPDATE urls SET clicks = clicks + 1 WHERE slug = ?"
+);
+const stmtGetAllUrls = db.prepare(
+  "SELECT * FROM urls ORDER BY created_at DESC"
+);
+const stmtDeleteUrl = db.prepare("DELETE FROM urls WHERE id = ?");
+const stmtUpdateExpiry = db.prepare(
+  "UPDATE urls SET expires_at = ? WHERE id = ?"
+);
+
 // --- Types ---
 interface UrlRecord {
   id: number;
@@ -93,9 +113,7 @@ const app = new Elysia()
 
       // If custom slug is provided, check if it exists
       if (customSlug) {
-        const existing = db
-          .query("SELECT id FROM urls WHERE slug = ?")
-          .get(slug);
+        const existing = stmtCheckSlug.get(slug);
         if (existing) {
           set.status = 409;
           return { error: "Slug already exists" };
@@ -103,10 +121,7 @@ const app = new Elysia()
       } else {
         // Ensure generated slug is unique
         let retries = 5;
-        while (
-          db.query("SELECT id FROM urls WHERE slug = ?").get(slug) &&
-          retries > 0
-        ) {
+        while (stmtCheckSlug.get(slug) && retries > 0) {
           slug = generateSlug();
           retries--;
         }
@@ -117,10 +132,7 @@ const app = new Elysia()
       }
 
       try {
-        db.run(
-          "INSERT INTO urls (slug, original_url, expires_at) VALUES (?, ?, ?)",
-          [slug, url, expiresAt || null]
-        );
+        stmtInsertUrl.run(slug, url, expiresAt || null);
 
         return {
           success: true,
@@ -150,18 +162,15 @@ const app = new Elysia()
         return {};
       })
       .get("/urls", () => {
-        return db.query("SELECT * FROM urls ORDER BY created_at DESC").all();
+        return stmtGetAllUrls.all();
       })
       .delete("/urls/:id", ({ params }) => {
-        db.run("DELETE FROM urls WHERE id = ?", [params.id]);
+        stmtDeleteUrl.run(params.id);
         return { success: true };
       })
       .patch("/urls/:id", ({ params, body }) => {
         const { expires_at } = body as { expires_at: string | null };
-        db.run("UPDATE urls SET expires_at = ? WHERE id = ?", [
-          expires_at,
-          params.id,
-        ]);
+        stmtUpdateExpiry.run(expires_at, params.id);
         return { success: true };
       })
       // Auth Check Endpoint
@@ -299,9 +308,7 @@ const app = new Elysia()
       return Bun.file(join(DIST_DIR, "index.html"));
     }
 
-    const record = db.query("SELECT * FROM urls WHERE slug = ?").get(slug) as
-      | UrlRecord
-      | undefined;
+    const record = stmtGetBySlug.get(slug) as UrlRecord | undefined;
 
     if (!record) {
       set.status = 404;
@@ -314,9 +321,8 @@ const app = new Elysia()
       return "URL has expired";
     }
 
-    // Async increment click (fire and forget sorta)
-    // In Bun/SQLite this is synchronous anyway but fast
-    db.run("UPDATE urls SET clicks = clicks + 1 WHERE slug = ?", [slug]);
+    // Increment click count
+    stmtIncrementClick.run(slug);
 
     // Use proper Response.redirect for HTTP 302 redirect
     return Response.redirect(record.original_url, 302);
