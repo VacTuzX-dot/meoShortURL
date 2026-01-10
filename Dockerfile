@@ -1,5 +1,5 @@
 # Build Rust backend
-FROM rust:1.83-bookworm AS rust-builder
+FROM rust:latest AS rust-builder
 WORKDIR /app
 # Copy Rust source
 COPY rust-backend/Cargo.toml rust-backend/Cargo.lock* ./
