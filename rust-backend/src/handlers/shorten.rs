@@ -31,19 +31,40 @@ pub async fn create_short_url(
         );
     }
 
+    let is_custom_slug = payload.custom_slug.is_some();
     let mut slug = payload.custom_slug.clone().unwrap_or_else(|| generate_slug(6));
     slug = slug.trim().to_string();
 
-    // Check if custom slug exists
-    if payload.custom_slug.is_some() {
-        match state.db.check_slug_exists(&slug).await {
-            Ok(true) => {
-                return (
-                    StatusCode::CONFLICT,
-                    Json(serde_json::json!({"error": "Slug already exists"})),
-                );
+    let expires_at = payload.expires_at.as_deref();
+    const MAX_RETRIES: u32 = 5;
+
+    // Try to insert, retry on UNIQUE constraint violation (for auto-generated slugs only)
+    for attempt in 0..MAX_RETRIES {
+        match state.db.insert_url(&slug, &payload.url, expires_at).await {
+            Ok(()) => {
+                // Success! Return the response
+                let response = CreateUrlResponse {
+                    success: true,
+                    short_url: format!("{}/{}", state.base_url, slug),
+                    slug: slug.clone(),
+                    original_url: payload.url,
+                    expires_at: payload.expires_at,
+                };
+                return (StatusCode::OK, Json(serde_json::to_value(response).unwrap()));
             }
-            Ok(false) => {}
+            Err(sqlx::Error::Database(db_err)) if db_err.is_unique_violation() => {
+                if is_custom_slug {
+                    // Custom slug collision - return conflict error
+                    return (
+                        StatusCode::CONFLICT,
+                        Json(serde_json::json!({"error": "Slug already exists"})),
+                    );
+                }
+                // Auto-generated slug collision - retry with new slug
+                if attempt < MAX_RETRIES - 1 {
+                    slug = generate_slug(6);
+                }
+            }
             Err(_) => {
                 return (
                     StatusCode::INTERNAL_SERVER_ERROR,
@@ -51,48 +72,11 @@ pub async fn create_short_url(
                 );
             }
         }
-    } else {
-        // Ensure generated slug is unique
-        let mut retries = 5;
-        while retries > 0 {
-            match state.db.check_slug_exists(&slug).await {
-                Ok(true) => {
-                    slug = generate_slug(6);
-                    retries -= 1;
-                }
-                Ok(false) => break,
-                Err(_) => {
-                    return (
-                        StatusCode::INTERNAL_SERVER_ERROR,
-                        Json(serde_json::json!({"error": "Database error"})),
-                    );
-                }
-            }
-        }
-        if retries == 0 {
-            return (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({"error": "Failed to generate unique slug"})),
-            );
-        }
     }
 
-    // Insert into database
-    let expires_at = payload.expires_at.as_deref();
-    if let Err(_) = state.db.insert_url(&slug, &payload.url, expires_at).await {
-        return (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            Json(serde_json::json!({"error": "Database error"})),
-        );
-    }
-
-    let response = CreateUrlResponse {
-        success: true,
-        short_url: format!("{}/{}", state.base_url, slug),
-        slug: slug.clone(),
-        original_url: payload.url,
-        expires_at: payload.expires_at,
-    };
-
-    (StatusCode::OK, Json(serde_json::to_value(response).unwrap()))
+    // All retries exhausted
+    (
+        StatusCode::INTERNAL_SERVER_ERROR,
+        Json(serde_json::json!({"error": "Failed to generate unique slug"})),
+    )
 }
