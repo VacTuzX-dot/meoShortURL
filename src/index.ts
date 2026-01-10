@@ -318,7 +318,8 @@ const app = new Elysia()
     // In Bun/SQLite this is synchronous anyway but fast
     db.run("UPDATE urls SET clicks = clicks + 1 WHERE slug = ?", [slug]);
 
-    set.redirect = record.original_url;
+    // Use proper Response.redirect for HTTP 302 redirect
+    return Response.redirect(record.original_url, 302);
   })
 
   // Fallback to serving index.html for SPA routing (React Router)
