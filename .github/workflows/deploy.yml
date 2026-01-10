@@ -89,16 +89,35 @@ jobs:
           printf '%s\n' "$SSH_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-          # Trim Host and Scan Keys
+          # Retry ssh-keyscan until successful (max 10 attempts)
           CLEAN_HOST=$(echo "$SSH_HOST" | xargs)
           CLEAN_PORT=$(echo "${SSH_PORT:-22}" | xargs)
 
           echo "Scanning host: $CLEAN_HOST on port $CLEAN_PORT"
-          ssh-keyscan -p "$CLEAN_PORT" "$CLEAN_HOST" >> ~/.ssh/known_hosts 2>/dev/null || echo "Warning: ssh-keyscan failed"
 
-          # Verify known_hosts content (Debug)
+          MAX_RETRIES=10
+          RETRY_DELAY=5
+          RETRY_COUNT=0
+
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            echo "Attempt $((RETRY_COUNT + 1)) of $MAX_RETRIES..."
+            if ssh-keyscan -p "$CLEAN_PORT" "$CLEAN_HOST" >> ~/.ssh/known_hosts 2>/dev/null; then
+              if [ -s ~/.ssh/known_hosts ]; then
+                echo "✅ Host key successfully added to known_hosts"
+                break
+              fi
+            fi
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+              echo "ssh-keyscan failed, retrying in ${RETRY_DELAY}s..."
+              sleep $RETRY_DELAY
+            fi
+          done
+
+          # Verify known_hosts has content
           if [ ! -s ~/.ssh/known_hosts ]; then
-             echo "Warning: known_hosts is empty. SSH connection might fail validation."
+            echo "❌ Error: Failed to scan host key after $MAX_RETRIES attempts"
+            exit 1
           fi
 
       - name: Upload project files
