@@ -1,10 +1,16 @@
 # Build Rust backend
 FROM rust:latest AS rust-builder
 WORKDIR /app
-# Copy Rust source
+
+# Cache dependencies - copy only Cargo files first
 COPY rust-backend/Cargo.toml rust-backend/Cargo.lock* ./
+
+# Create dummy src to build dependencies
+RUN mkdir src && echo "fn main() {}" > src/main.rs
+RUN cargo build --release && rm -rf src target/release/deps/meoshorturl*
+
+# Copy actual source and build
 COPY rust-backend/src ./src
-# Build release binary
 RUN cargo build --release
 
 # Build Frontend
