@@ -445,7 +445,7 @@ export default function Home() {
           marginTop: "auto",
           paddingTop: "2rem",
           textAlign: "center",
-          color: "var(--border)",
+          color: "var(--text-muted)",
           fontSize: "0.8rem",
         }}
       >
