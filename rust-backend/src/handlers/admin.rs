@@ -12,7 +12,22 @@ use crate::{
     AppState,
 };
 
-pub async fn list_urls(State(state): State<Arc<AppState>>) -> impl IntoResponse {
+// Helper to check auth from headers
+fn check_auth(headers: &HeaderMap) -> bool {
+    let cookie_header = headers
+        .get("cookie")
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("");
+    extract_session_from_cookie(cookie_header).is_some()
+}
+
+pub async fn list_urls(State(state): State<Arc<AppState>>, headers: HeaderMap) -> impl IntoResponse {
+    if !check_auth(&headers) {
+        return (
+            StatusCode::UNAUTHORIZED,
+            Json(serde_json::json!({"error": "Unauthorized"})),
+        );
+    }
     match state.db.get_all_urls().await {
         Ok(urls) => (StatusCode::OK, Json(serde_json::to_value(urls).unwrap())),
         Err(_) => (
@@ -25,7 +40,14 @@ pub async fn list_urls(State(state): State<Arc<AppState>>) -> impl IntoResponse 
 pub async fn delete_url(
     State(state): State<Arc<AppState>>,
     Path(id): Path<i64>,
+    headers: HeaderMap,
 ) -> impl IntoResponse {
+    if !check_auth(&headers) {
+        return (
+            StatusCode::UNAUTHORIZED,
+            Json(serde_json::json!({"error": "Unauthorized"})),
+        );
+    }
     match state.db.delete_url(id).await {
         Ok(_) => (
             StatusCode::OK,
@@ -41,8 +63,15 @@ pub async fn delete_url(
 pub async fn update_url(
     State(state): State<Arc<AppState>>,
     Path(id): Path<i64>,
+    headers: HeaderMap,
     Json(payload): Json<UpdateUrlRequest>,
 ) -> impl IntoResponse {
+    if !check_auth(&headers) {
+        return (
+            StatusCode::UNAUTHORIZED,
+            Json(serde_json::json!({"error": "Unauthorized"})),
+        );
+    }
     match state.db.update_expiry(id, payload.expires_at.as_deref()).await {
         Ok(_) => (
             StatusCode::OK,

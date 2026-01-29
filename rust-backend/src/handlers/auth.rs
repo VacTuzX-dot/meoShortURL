@@ -96,10 +96,12 @@ pub async fn discord_callback(
 
     // Create session cookie
     let session_value = encode_session(&user_data);
+    let is_production = state.base_url.starts_with("https");
     let cookie = format!(
-        "{}={}; Path=/; HttpOnly; SameSite=Lax; Max-Age={}",
+        "{}={}; Path=/; HttpOnly;{} SameSite=Lax; Max-Age={}",
         SESSION_COOKIE,
         session_value,
+        if is_production { " Secure;" } else { "" },
         60 * 60 * 24 * 7 // 7 days
     );
 

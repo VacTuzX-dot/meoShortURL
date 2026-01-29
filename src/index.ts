@@ -26,17 +26,17 @@ db.run(`CREATE INDEX IF NOT EXISTS idx_urls_slug ON urls(slug)`);
 const stmtGetBySlug = db.prepare("SELECT * FROM urls WHERE slug = ?");
 const stmtCheckSlug = db.prepare("SELECT id FROM urls WHERE slug = ?");
 const stmtInsertUrl = db.prepare(
-  "INSERT INTO urls (slug, original_url, expires_at) VALUES (?, ?, ?)"
+  "INSERT INTO urls (slug, original_url, expires_at) VALUES (?, ?, ?)",
 );
 const stmtIncrementClick = db.prepare(
-  "UPDATE urls SET clicks = clicks + 1 WHERE slug = ?"
+  "UPDATE urls SET clicks = clicks + 1 WHERE slug = ?",
 );
 const stmtGetAllUrls = db.prepare(
-  "SELECT * FROM urls ORDER BY created_at DESC"
+  "SELECT * FROM urls ORDER BY created_at DESC",
 );
 const stmtDeleteUrl = db.prepare("DELETE FROM urls WHERE id = ?");
 const stmtUpdateExpiry = db.prepare(
-  "UPDATE urls SET expires_at = ? WHERE id = ?"
+  "UPDATE urls SET expires_at = ? WHERE id = ?",
 );
 
 // --- Types ---
@@ -85,11 +85,68 @@ function generateSlug(length = 6): string {
   return slug;
 }
 
+// --- Rate Limiting ---
+const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT_MAX = 10; // requests
+const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute in ms
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const record = rateLimitStore.get(ip);
+
+  if (!record || now > record.resetTime) {
+    rateLimitStore.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
+    return true;
+  }
+
+  if (record.count >= RATE_LIMIT_MAX) {
+    return false;
+  }
+
+  record.count++;
+  return true;
+}
+
+// --- URL Validation ---
+function isValidUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    // Only allow http and https protocols
+    if (!["http:", "https:"].includes(parsed.protocol)) {
+      return false;
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// --- Auth Helper ---
+function getSessionFromRequest(request: Request): DiscordUser | null {
+  const cookieHeader = request.headers.get("cookie") || "";
+  const cookies = Object.fromEntries(
+    cookieHeader.split("; ").map((c) => {
+      const [key, ...val] = c.split("=");
+      return [key, val.join("=")];
+    }),
+  );
+  const session = cookies[SESSION_COOKIE];
+  if (!session) return null;
+  return decodeSession(session);
+}
+
 const DIST_DIR = join(import.meta.dir, "..", "dist");
 
 // --- App Setup ---
 const app = new Elysia()
   .use(cors())
+  // Security Headers Middleware
+  .onBeforeHandle(({ set }) => {
+    set.headers["X-Content-Type-Options"] = "nosniff";
+    set.headers["X-Frame-Options"] = "DENY";
+    set.headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+    set.headers["X-XSS-Protection"] = "1; mode=block";
+  })
   // Serve robots.txt for SEO
   .get("/robots.txt", () => Bun.file(join(DIST_DIR, "robots.txt")))
   // Serve static assets from dist/assets
@@ -99,7 +156,17 @@ const app = new Elysia()
   })
   // API Routes
   .group("/shorten", (app) =>
-    app.post("/", ({ body, set }) => {
+    app.post("/", ({ body, set, request }) => {
+      // Rate limit check
+      const clientIp =
+        request.headers.get("x-forwarded-for")?.split(",")[0] ||
+        request.headers.get("x-real-ip") ||
+        "unknown";
+      if (!checkRateLimit(clientIp)) {
+        set.status = 429;
+        return { error: "Too many requests. Please try again later." };
+      }
+
       const { url, customSlug, expiresAt } = body as {
         url: string;
         customSlug?: string;
@@ -109,6 +176,12 @@ const app = new Elysia()
       if (!url) {
         set.status = 400;
         return { error: "URL is required" };
+      }
+
+      // URL validation
+      if (!isValidUrl(url)) {
+        set.status = 400;
+        return { error: "Invalid URL. Only http and https URLs are allowed." };
       }
 
       let slug = customSlug?.trim() || generateSlug();
@@ -150,27 +223,45 @@ const app = new Elysia()
         set.status = 500;
         return { error: "Database error" };
       }
-    })
+    }),
   )
 
   // Admin API Group
   .group("/api/admin", (app) =>
     app
-      // Auth Middleware (Mock for now, real implementation below)
-      .derive(() => {
-        // Build this correctly with Discord OAuth
-        // For now, if we are in dev/test, maybe relax?
-        // But user wants Discord Auth.
-        return {};
+      // Auth Middleware - check session for all admin routes except /me
+      .derive(({ request, set }) => {
+        const path = new URL(request.url).pathname;
+        // Skip auth check for /me endpoint (it handles its own auth)
+        if (path === "/api/admin/me") {
+          return {};
+        }
+
+        const user = getSessionFromRequest(request);
+        if (!user) {
+          set.status = 401;
+          return { error: "Unauthorized" };
+        }
+        return { user };
       })
-      .get("/urls", () => {
+      .get("/urls", ({ set }) => {
+        // Check if unauthorized (set by middleware)
+        if (set.status === 401) {
+          return { error: "Unauthorized" };
+        }
         return stmtGetAllUrls.all();
       })
-      .delete("/urls/:id", ({ params }) => {
+      .delete("/urls/:id", ({ params, set }) => {
+        if (set.status === 401) {
+          return { error: "Unauthorized" };
+        }
         stmtDeleteUrl.run(params.id);
         return { success: true };
       })
-      .patch("/urls/:id", ({ params, body }) => {
+      .patch(\"/urls/:id\", ({ params, body, set }) => {
+        if (set.status === 401) {
+          return { error: \"Unauthorized\" };
+        }
         const { expires_at } = body as { expires_at: string | null };
         stmtUpdateExpiry.run(expires_at, params.id);
         return { success: true };
@@ -182,7 +273,7 @@ const app = new Elysia()
           cookieHeader.split("; ").map((c) => {
             const [key, ...val] = c.split("=");
             return [key, val.join("=")];
-          })
+          }),
         );
 
         const session = cookies[SESSION_COOKIE];
@@ -198,7 +289,7 @@ const app = new Elysia()
         }
 
         return { user };
-      })
+      }),
   )
 
   // Auth Routes
@@ -211,7 +302,7 @@ const app = new Elysia()
           return new Response("Discord Env Missing", { status: 500 });
         }
         const url = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(
-          redirectUri
+          redirectUri,
         )}&response_type=code&scope=identify`;
         return Response.redirect(url, 302);
       })
@@ -235,7 +326,7 @@ const app = new Elysia()
                 code: code as string,
                 redirect_uri: process.env.DISCORD_REDIRECT_URI!,
               }),
-            }
+            },
           );
 
           if (!tokenResponse.ok) {
@@ -252,7 +343,7 @@ const app = new Elysia()
             "https://discord.com/api/users/@me",
             {
               headers: { Authorization: `Bearer ${tokenData.access_token}` },
-            }
+            },
           );
 
           if (!userResponse.ok) {
@@ -269,12 +360,13 @@ const app = new Elysia()
             avatar: userData.avatar,
           });
 
-          // Redirect with Set-Cookie header
+          // Redirect with Set-Cookie header (Secure flag for HTTPS)
+          const isProduction = baseUrl.startsWith("https");
           return new Response(null, {
             status: 302,
             headers: {
               Location: `${baseUrl}/dashboard`,
-              "Set-Cookie": `${SESSION_COOKIE}=${sessionValue}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${
+              "Set-Cookie": `${SESSION_COOKIE}=${sessionValue}; Path=/; HttpOnly;${isProduction ? " Secure;" : ""} SameSite=Lax; Max-Age=${
                 60 * 60 * 24 * 7
               }`,
             },
@@ -294,7 +386,7 @@ const app = new Elysia()
             "Set-Cookie": `${SESSION_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`,
           },
         });
-      })
+      }),
   )
 
   // Redirect Route (Catch-all for short links)
@@ -336,5 +428,5 @@ const app = new Elysia()
   .listen(Number(process.env.PORT) || 3006);
 
 console.log(
-  `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`
+  `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`,
 );

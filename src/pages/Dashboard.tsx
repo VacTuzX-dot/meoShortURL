@@ -1,6 +1,14 @@
 import { useEffect, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { X, ExternalLink, Trash2, Save, Settings2 } from "lucide-react";
+import {
+  X,
+  ExternalLink,
+  Trash2,
+  Save,
+  Settings2,
+  Copy,
+  Check,
+} from "lucide-react";
 
 interface UrlData {
   id: number;
@@ -25,6 +33,20 @@ export default function Dashboard() {
   const [durationValue, setDurationValue] = useState(30);
   const [durationUnit, setDurationUnit] = useState("minutes");
   const [isSavingExpiration, setIsSavingExpiration] = useState(false);
+
+  // Copy link state
+  const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
+
+  const handleCopy = async (slug: string) => {
+    const shortUrl = `${window.location.origin}/${slug}`;
+    try {
+      await navigator.clipboard.writeText(shortUrl);
+      setCopiedSlug(slug);
+      setTimeout(() => setCopiedSlug(null), 2000);
+    } catch (err) {
+      console.error("Failed to copy:", err);
+    }
+  };
 
   useEffect(() => {
     const fetchUrls = async () => {
@@ -98,8 +120,8 @@ export default function Dashboard() {
         // Update local state
         setUrls((prev) =>
           prev.map((u) =>
-            u.id === selectedUrl.id ? { ...u, expires_at: newExpiresAt } : u
-          )
+            u.id === selectedUrl.id ? { ...u, expires_at: newExpiresAt } : u,
+          ),
         );
         setSelectedUrl({ ...selectedUrl, expires_at: newExpiresAt });
         setIsEditingExpiration(false);
@@ -313,14 +335,49 @@ export default function Dashboard() {
                     color: "var(--primary)",
                   }}
                 >
-                  <a
-                    href={`/${url.slug}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{ color: "inherit", textDecoration: "none" }}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem",
+                    }}
                   >
-                    {url.slug}
-                  </a>
+                    <a
+                      href={`/${url.slug}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ color: "inherit", textDecoration: "none" }}
+                    >
+                      {url.slug}
+                    </a>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCopy(url.slug);
+                      }}
+                      title="Copy short link"
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        padding: "0.25rem",
+                        width: "auto",
+                        cursor: "pointer",
+                        color:
+                          copiedSlug === url.slug
+                            ? "var(--primary)"
+                            : "var(--text-muted)",
+                        display: "flex",
+                        alignItems: "center",
+                        transition: "color 0.2s",
+                      }}
+                    >
+                      {copiedSlug === url.slug ? (
+                        <Check size={14} />
+                      ) : (
+                        <Copy size={14} />
+                      )}
+                    </button>
+                  </div>
                 </td>
                 <td
                   style={{
@@ -421,14 +478,46 @@ export default function Dashboard() {
                                 <span>
                                   {window.location.origin}/{selectedUrl.slug}
                                 </span>
-                                <a
-                                  href={`/${selectedUrl.slug}`}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  style={{ color: "var(--text-muted)" }}
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    gap: "0.5rem",
+                                    alignItems: "center",
+                                  }}
                                 >
-                                  <ExternalLink size={16} />
-                                </a>
+                                  <button
+                                    onClick={() => handleCopy(selectedUrl.slug)}
+                                    title="Copy short link"
+                                    style={{
+                                      background: "transparent",
+                                      border: "none",
+                                      padding: "0.25rem",
+                                      width: "auto",
+                                      cursor: "pointer",
+                                      color:
+                                        copiedSlug === selectedUrl.slug
+                                          ? "var(--primary)"
+                                          : "var(--text-muted)",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      transition: "color 0.2s",
+                                    }}
+                                  >
+                                    {copiedSlug === selectedUrl.slug ? (
+                                      <Check size={16} />
+                                    ) : (
+                                      <Copy size={16} />
+                                    )}
+                                  </button>
+                                  <a
+                                    href={`/${selectedUrl.slug}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    style={{ color: "var(--text-muted)" }}
+                                  >
+                                    <ExternalLink size={16} />
+                                  </a>
+                                </div>
                               </div>
                             </div>
 
@@ -512,7 +601,7 @@ export default function Dashboard() {
                                   }}
                                 >
                                   {new Date(
-                                    selectedUrl.created_at
+                                    selectedUrl.created_at,
                                   ).toLocaleDateString()}
                                 </div>
                               </div>
@@ -570,7 +659,7 @@ export default function Dashboard() {
                                 >
                                   {selectedUrl.expires_at
                                     ? new Date(
-                                        selectedUrl.expires_at
+                                        selectedUrl.expires_at,
                                       ).toLocaleString()
                                     : "Never (Permanent)"}
                                 </div>
@@ -651,7 +740,7 @@ export default function Dashboard() {
                                         value={durationValue}
                                         onChange={(e) =>
                                           setDurationValue(
-                                            Number(e.target.value)
+                                            Number(e.target.value),
                                           )
                                         }
                                         style={{
