@@ -258,9 +258,9 @@ const app = new Elysia()
         stmtDeleteUrl.run(params.id);
         return { success: true };
       })
-      .patch(\"/urls/:id\", ({ params, body, set }) => {
+      .patch("/urls/:id", ({ params, body, set }) => {
         if (set.status === 401) {
-          return { error: \"Unauthorized\" };
+          return { error: "Unauthorized" };
         }
         const { expires_at } = body as { expires_at: string | null };
         stmtUpdateExpiry.run(expires_at, params.id);
